@@ -344,16 +344,22 @@ class Game {
         this.ctx.font = '24px Arial';
         this.ctx.textBaseline = 'top';
         this.ctx.imageSmoothingEnabled = true;
-        this.ctx.fillText(`Score: ${this.score}`, 10, 30);
-        this.ctx.fillText(`Level ${this.level}`, 10, 60);
         
-        // Draw progress bar directly under level
+        // Adjust y-positions for better spacing
+        const scoreY = 20;
+        const levelY = 60;
+        const progressY = 95;  // Move progress bar down below the level text
+        
+        this.ctx.fillText(`Score: ${this.score}`, 10, scoreY);
+        this.ctx.fillText(`Level ${this.level}`, 10, levelY);
+        
+        // Draw progress bar below level text
         const progressWidth = 200;
         const progressHeight = 10;
         this.ctx.fillStyle = '#2c3e50';
-        this.ctx.fillRect(10, 70, progressWidth, progressHeight);
+        this.ctx.fillRect(10, progressY, progressWidth, progressHeight);
         this.ctx.fillStyle = '#27ae60';
-        this.ctx.fillRect(10, 70, 
+        this.ctx.fillRect(10, progressY, 
             (this.levelScore / this.scoreToNextLevel) * progressWidth, 
             progressHeight
         );
