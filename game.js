@@ -339,9 +339,11 @@ class Game {
             this.ctx.fillText(`+${anim.points}`, anim.x, anim.y);
         });
 
-        // Draw score and level with simplified progress bar
+        // Draw score and level with no shadow
         this.ctx.fillStyle = '#fff';
         this.ctx.font = '24px Arial';
+        this.ctx.textBaseline = 'top';
+        this.ctx.imageSmoothingEnabled = true;
         this.ctx.fillText(`Score: ${this.score}`, 10, 30);
         this.ctx.fillText(`Level ${this.level}`, 10, 60);
         
