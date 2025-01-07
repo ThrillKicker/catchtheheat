@@ -220,12 +220,16 @@
         const menuButton = document.getElementById('menu-button');
         const audioControls = document.getElementById('audio-controls');
         let menuOpen = false;
+        let game; // Will store the game instance
 
         menuButton.addEventListener('click', (e) => {
             e.stopPropagation();
             menuOpen = !menuOpen;
             menuButton.classList.toggle('open');
             audioControls.classList.toggle('show');
+            if (game) {
+                game.setPaused(menuOpen);
+            }
         });
 
         // Close menu when clicking outside
@@ -236,8 +240,16 @@
                 menuOpen = false;
                 menuButton.classList.remove('open');
                 audioControls.classList.remove('show');
+                if (game) {
+                    game.setPaused(false);
+                }
             }
         });
+
+        // Initialize game when page loads
+        window.onload = () => {
+            game = new Game();
+        };
     </script>
     <script src="audio-manager.js"></script>
     <script src="game.js"></script>

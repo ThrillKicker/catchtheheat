@@ -84,27 +84,10 @@ class Game {
         this.initializeGame();
 
         this.isPaused = false;
-        
-        // Update menu toggle handler
-        menuButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            menuOpen = !menuOpen;
-            menuButton.classList.toggle('open');
-            audioControls.classList.toggle('show');
-            this.isPaused = menuOpen; // Pause when menu is open
-        });
+    }
 
-        // Update click outside handler
-        document.addEventListener('click', (e) => {
-            if (menuOpen && 
-                !audioControls.contains(e.target) && 
-                e.target !== menuButton) {
-                menuOpen = false;
-                menuButton.classList.remove('open');
-                audioControls.classList.remove('show');
-                this.isPaused = false; // Unpause when menu is closed
-            }
-        });
+    setPaused(paused) {
+        this.isPaused = paused;
     }
 
     initializeGame() {
@@ -480,7 +463,4 @@ class Game {
             }
         }
     }
-}
-
-// Initialize game when page loads, but don't start it
-window.onload = () => new Game(); 
+} 
