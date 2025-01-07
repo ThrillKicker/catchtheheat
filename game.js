@@ -11,7 +11,10 @@ class Game {
         
         // Load all sprites
         this.sprites = {
-            taco: new Image(),
+            players: {
+                taco: new Image(),
+                wing: new Image()
+            },
             sauceDrops: {
                 mild: new Image(),
                 hot: new Image(),
@@ -19,14 +22,18 @@ class Game {
             }
         };
 
-        this.sprites.taco.src = 'assets/taco.png';
+        this.sprites.players.taco.src = 'assets/taco.png';
+        this.sprites.players.wing.src = 'assets/wing.png';
         this.sprites.sauceDrops.mild.src = 'assets/milddrip.png';
         this.sprites.sauceDrops.hot.src = 'assets/mediumdrip.png';
         this.sprites.sauceDrops.extraHot.src = 'assets/hotdrip.png';
 
         // Track loaded state of sprites
         this.spritesReady = {
-            taco: false,
+            players: {
+                taco: false,
+                wing: false
+            },
             sauceDrops: {
                 mild: false,
                 hot: false,
@@ -35,12 +42,16 @@ class Game {
         };
 
         // Track total sprites to load
-        this.totalSprites = 4; // taco + 3 sauce types
+        this.totalSprites = 5; // taco + wing + 3 sauce types
         this.loadedSprites = 0;
 
-        // Set up sprite load handlers with loading counter
-        this.sprites.taco.onload = () => {
-            this.spritesReady.taco = true;
+        // Set up sprite load handlers
+        this.sprites.players.taco.onload = () => {
+            this.spritesReady.players.taco = true;
+            this.handleSpriteLoad();
+        };
+        this.sprites.players.wing.onload = () => {
+            this.spritesReady.players.wing = true;
             this.handleSpriteLoad();
         };
         this.sprites.sauceDrops.mild.onload = () => {
@@ -55,6 +66,15 @@ class Game {
             this.spritesReady.sauceDrops.extraHot = true;
             this.handleSpriteLoad();
         };
+
+        // Set up sprite selection handler
+        const spriteInputs = document.querySelectorAll('input[name="sprite"]');
+        spriteInputs.forEach(input => {
+            input.addEventListener('change', () => {
+                this.currentSprite = input.value;
+            });
+        });
+        this.currentSprite = 'taco'; // default sprite
 
         // Set up start button
         const startButton = document.getElementById('start-button');
@@ -250,10 +270,10 @@ class Game {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Draw taco
-        if (this.spritesReady.taco) {
+        // Draw player sprite
+        if (this.spritesReady.players[this.currentSprite]) {
             this.ctx.drawImage(
-                this.sprites.taco,
+                this.sprites.players[this.currentSprite],
                 this.taco.x,
                 this.taco.y,
                 this.taco.width,

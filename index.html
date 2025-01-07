@@ -150,19 +150,37 @@
     </button>
     <div id="audio-controls">
         <h2 style="margin-top: 0; margin-bottom: 20px;">Settings</h2>
-        <div class="audio-control">
-            <label>
-                <button id="musicMute" class="mute-btn">🎵</button>
-                Music
-            </label>
-            <input type="range" id="musicVolume" min="0" max="100" value="50">
+        <div class="settings-section">
+            <h3>Sprite</h3>
+            <div class="sprite-selection">
+                <label class="sprite-option">
+                    <input type="radio" name="sprite" value="taco" checked>
+                    <img src="assets/taco.png" alt="Taco">
+                    <span>Taco</span>
+                </label>
+                <label class="sprite-option">
+                    <input type="radio" name="sprite" value="wing">
+                    <img src="assets/wing.png" alt="Wing">
+                    <span>Wing</span>
+                </label>
+            </div>
         </div>
-        <div class="audio-control">
-            <label>
-                <button id="sfxMute" class="mute-btn">🔊</button>
-                Sound FX
-            </label>
-            <input type="range" id="sfxVolume" min="0" max="100" value="70">
+        <div class="settings-section">
+            <h3>Audio</h3>
+            <div class="audio-control">
+                <label>
+                    <button id="musicMute" class="mute-btn">🎵</button>
+                    Music
+                </label>
+                <input type="range" id="musicVolume" min="0" max="100" value="50">
+            </div>
+            <div class="audio-control">
+                <label>
+                    <button id="sfxMute" class="mute-btn">🔊</button>
+                    Sound FX
+                </label>
+                <input type="range" id="sfxVolume" min="0" max="100" value="70">
+            </div>
         </div>
     </div>
     <canvas id="gameCanvas"></canvas>
