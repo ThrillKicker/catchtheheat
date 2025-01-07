@@ -108,12 +108,40 @@
             width: 100%;
             margin: 10px 0;
         }
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        #start-button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #start-button:hover {
+            background: #c0392b;
+        }
     </style>
 </head>
 <body>
     <div id="loading" style="display: block;">
         <div class="loader"></div>
         <p>Loading game...</p>
+    </div>
+    <div id="start-screen">
+        <button id="start-button">Start</button>
     </div>
     <button id="menu-button">
         <span class="hamburger-line"></span>

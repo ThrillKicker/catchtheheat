@@ -3,6 +3,7 @@ class Game {
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.setCanvasSize();
+        this.gameStarted = false;
         
         // Add these debug logs
         console.log('Document base URI:', document.baseURI);
@@ -55,7 +56,16 @@ class Game {
             this.handleSpriteLoad();
         };
 
-        // Game objects
+        // Set up start button
+        const startButton = document.getElementById('start-button');
+        startButton.addEventListener('click', () => this.startGame());
+
+        // Initialize game objects but don't start the game loop yet
+        this.initializeGame();
+    }
+
+    initializeGame() {
+        // Move initialization code here from constructor
         this.taco = {
             x: this.canvas.width / 2,
             y: this.canvas.height - 60,
@@ -66,13 +76,9 @@ class Game {
         
         this.sauceDrops = [];
         this.score = 0;
-        
-        // Add level-related properties
         this.level = 1;
         this.levelScore = 0;
-        this.scoreToNextLevel = 200;  // Increased base score requirement
-        
-        // Add multiplier for score tracking
+        this.scoreToNextLevel = 200;
         this.scoreMultiplier = 1.0;
         
         // Base sauce types - will be modified by level
@@ -114,13 +120,22 @@ class Game {
         
         // Initialize audio manager
         this.audio = new AudioManager();
+    }
 
-        // Event listeners
+    startGame() {
+        // Hide start screen
+        const startScreen = document.getElementById('start-screen');
+        startScreen.style.display = 'none';
+
+        // Start the game
+        this.gameStarted = true;
+        
+        // Add event listeners
         window.addEventListener('resize', () => this.setCanvasSize());
         this.canvas.addEventListener('touchmove', (e) => this.handleTouch(e));
         this.canvas.addEventListener('mousemove', (e) => this.handleMouse(e));
         
-        // Start game loop and music
+        // Start music and game loop
         this.audio.startMusic();
         this.gameLoop();
     }
@@ -317,6 +332,8 @@ class Game {
     }
 
     gameLoop() {
+        if (!this.gameStarted) return;
+        
         this.update();
         this.draw();
         requestAnimationFrame(() => this.gameLoop());
@@ -403,5 +420,5 @@ class Game {
     }
 }
 
-// Start the game when the page loads
+// Initialize game when page loads, but don't start it
 window.onload = () => new Game(); 
