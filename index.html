@@ -133,6 +133,39 @@
         #start-button:hover {
             background: #c0392b;
         }
+        .sprite-selection {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .sprite-option {
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .sprite-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sprite-option input[type="radio"] {
+            display: none;
+        }
+
+        .sprite-option img {
+            width: 60px;
+            height: 60px;
+            transition: all 0.3s ease;
+            filter: brightness(0.6);
+        }
+
+        .sprite-option input[type="radio"]:checked + img {
+            filter: brightness(1);
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
@@ -156,12 +189,10 @@
                 <label class="sprite-option">
                     <input type="radio" name="sprite" value="taco" checked>
                     <img src="assets/taco.png" alt="Taco">
-                    <span>Taco</span>
                 </label>
                 <label class="sprite-option">
                     <input type="radio" name="sprite" value="wing">
                     <img src="assets/wing.png" alt="Wing">
-                    <span>Wing</span>
                 </label>
             </div>
         </div>

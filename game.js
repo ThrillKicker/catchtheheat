@@ -82,6 +82,29 @@ class Game {
 
         // Initialize game objects but don't start the game loop yet
         this.initializeGame();
+
+        this.isPaused = false;
+        
+        // Update menu toggle handler
+        menuButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menuOpen = !menuOpen;
+            menuButton.classList.toggle('open');
+            audioControls.classList.toggle('show');
+            this.isPaused = menuOpen; // Pause when menu is open
+        });
+
+        // Update click outside handler
+        document.addEventListener('click', (e) => {
+            if (menuOpen && 
+                !audioControls.contains(e.target) && 
+                e.target !== menuButton) {
+                menuOpen = false;
+                menuButton.classList.remove('open');
+                audioControls.classList.remove('show');
+                this.isPaused = false; // Unpause when menu is closed
+            }
+        });
     }
 
     initializeGame() {
@@ -209,6 +232,8 @@ class Game {
     }
 
     update() {
+        if (this.isPaused) return; // Skip update if paused
+        
         // Create new sauce drops
         this.createSauceDrop();
 
@@ -270,6 +295,23 @@ class Game {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+        // Draw game elements
+        this.drawGameElements();
+
+        // Draw pause overlay if paused
+        if (this.isPaused) {
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            this.ctx.fillStyle = '#fff';
+            this.ctx.font = 'bold 48px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('PAUSED', this.canvas.width / 2, this.canvas.height / 2);
+            this.ctx.textAlign = 'left'; // Reset text align
+        }
+    }
+
+    drawGameElements() {
         // Draw player sprite
         if (this.spritesReady.players[this.currentSprite]) {
             this.ctx.drawImage(
