@@ -33,11 +33,27 @@ class Game {
             }
         };
 
-        // Set up sprite load handlers
-        this.sprites.taco.onload = () => this.spritesReady.taco = true;
-        this.sprites.sauceDrops.mild.onload = () => this.spritesReady.sauceDrops.mild = true;
-        this.sprites.sauceDrops.hot.onload = () => this.spritesReady.sauceDrops.hot = true;
-        this.sprites.sauceDrops.extraHot.onload = () => this.spritesReady.sauceDrops.extraHot = true;
+        // Track total sprites to load
+        this.totalSprites = 4; // taco + 3 sauce types
+        this.loadedSprites = 0;
+
+        // Set up sprite load handlers with loading counter
+        this.sprites.taco.onload = () => {
+            this.spritesReady.taco = true;
+            this.handleSpriteLoad();
+        };
+        this.sprites.sauceDrops.mild.onload = () => {
+            this.spritesReady.sauceDrops.mild = true;
+            this.handleSpriteLoad();
+        };
+        this.sprites.sauceDrops.hot.onload = () => {
+            this.spritesReady.sauceDrops.hot = true;
+            this.handleSpriteLoad();
+        };
+        this.sprites.sauceDrops.extraHot.onload = () => {
+            this.spritesReady.sauceDrops.extraHot = true;
+            this.handleSpriteLoad();
+        };
 
         // Game objects
         this.taco = {
@@ -373,6 +389,17 @@ class Game {
             life: 2.0,  // Message will show for 2 seconds
             y: this.canvas.height / 2
         };
+    }
+
+    handleSpriteLoad() {
+        this.loadedSprites++;
+        if (this.loadedSprites >= this.totalSprites) {
+            // All sprites loaded, hide loading screen
+            const loadingScreen = document.getElementById('loading');
+            if (loadingScreen) {
+                loadingScreen.style.display = 'none';
+            }
+        }
     }
 }
 
