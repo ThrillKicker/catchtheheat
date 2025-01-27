@@ -80,6 +80,10 @@ class Game {
         const startButton = document.getElementById('start-button');
         startButton.addEventListener('click', () => this.startGame());
 
+        // Set up restart button
+        const restartButton = document.getElementById('restart-button');
+        restartButton.addEventListener('click', () => this.restart());
+
         // Initialize game objects but don't start the game loop yet
         this.initializeGame();
 
@@ -111,8 +115,8 @@ class Game {
         this.baseSauceTypes = {
             mild: {
                 color: '#ff6b6b',
-                width: 15,
-                height: 25,
+                width: 20,
+                height: 30,
                 speedRange: { min: 2, max: 3 },
                 points: 1,
                 probability: 0.6
@@ -127,10 +131,10 @@ class Game {
             },
             extraHot: {
                 color: '#cc0000',
-                width: 25,
-                height: 35,
+                width: 20,
+                height: 30,
                 speedRange: { min: 4, max: 6 },
-                points: 5,
+                points: 3,
                 probability: 0.1
             }
         };
@@ -139,13 +143,47 @@ class Game {
         this.sauceTypes = JSON.parse(JSON.stringify(this.baseSauceTypes));
         
         // Drop frequency increases with level
-        this.dropRate = 0.03;
+        this.dropRate = 0.006; // Reduced from 0.01 to 0.006 (0.6% chance per frame)
         
         // Add score animation array
         this.scoreAnimations = [];
         
         // Initialize audio manager
         this.audio = new AudioManager();
+
+        // In the initializeGame method, add these properties
+        this.lives = 3;
+        this.missedDrops = 0;
+        this.missTimer = 30000; // 30 seconds in milliseconds
+        this.lastMissTime = Date.now();
+
+        // In the initializeGame method, add overlay opacity
+        this.overlayOpacity = 0;
+
+        // In the initializeGame method, add heart power-up properties
+        this.heartPowerup = {
+            active: false,
+            x: 0,
+            y: 0,
+            width: 30,
+            height: 30,
+            speed: 2,
+            spawnRate: 0.0003  // 0.03% chance per frame
+        };
+
+        // Add these properties to initializeGame method
+        this.lifeWarning = {
+            active: false,
+            opacity: 0,
+            message: '',
+            timer: 0
+        };
+
+        // In the initializeGame method, add these properties
+        this.catchStreak = 0;
+        this.multiplier = 1;
+        this.multiplierActive = false;
+        this.requiredStreak = 50;
     }
 
     startGame() {
@@ -186,6 +224,14 @@ class Game {
     }
 
     createSauceDrop() {
+        // Try to spawn heart power-up if not active
+        if (!this.heartPowerup.active && Math.random() < this.heartPowerup.spawnRate) {
+            const maxX = this.canvas.width - this.heartPowerup.width - 70;
+            this.heartPowerup.active = true;
+            this.heartPowerup.x = Math.random() * maxX;
+            this.heartPowerup.y = 0;
+        }
+
         if (Math.random() < this.dropRate) {
             // Determine sauce type based on probability
             const random = Math.random();
@@ -201,8 +247,11 @@ class Game {
 
             const typeProps = this.sauceTypes[sauceType];
             
+            // Calculate maximum x position to prevent drops behind progress bar
+            const maxX = this.canvas.width - typeProps.width - 70; // 70px = progress bar width (30px) + right margin (20px) + safety margin (20px)
+            
             this.sauceDrops.push({
-                x: Math.random() * (this.canvas.width - typeProps.width),
+                x: Math.random() * maxX, // Use maxX instead of full canvas width
                 y: 0,
                 width: typeProps.width,
                 height: typeProps.height,
@@ -215,8 +264,42 @@ class Game {
     }
 
     update() {
-        if (this.isPaused) return; // Skip update if paused
+        if (this.isPaused) return;
         
+        // Update heart power-up if active
+        if (this.heartPowerup.active) {
+            this.heartPowerup.y += this.heartPowerup.speed;
+            
+            // Check collision with player
+            if (this.checkCollision(this.heartPowerup, this.taco)) {
+                if (this.lives < 5) {  // Cap at 5 lives
+                    this.lives++;
+                    // Create score animation for extra life
+                    this.scoreAnimations.push({
+                        x: this.heartPowerup.x,
+                        y: this.heartPowerup.y,
+                        points: '+1 LIFE',
+                        life: 1.0
+                    });
+                } else {
+                    // Show message that max lives reached
+                    this.scoreAnimations.push({
+                        x: this.heartPowerup.x,
+                        y: this.heartPowerup.y,
+                        points: 'MAX LIVES',
+                        life: 1.0
+                    });
+                }
+                this.heartPowerup.active = false;
+            }
+            
+            // Remove if missed (without penalty)
+            if (this.heartPowerup.y >= this.canvas.height) {
+                this.heartPowerup.active = false;
+                // No handleMissedDrop() call here
+            }
+        }
+
         // Create new sauce drops
         this.createSauceDrop();
 
@@ -226,14 +309,31 @@ class Game {
 
             // Check collision with taco
             if (this.checkCollision(drop, this.taco)) {
-                this.score += drop.points;
-                // Play catch sound
+                // Increase catch streak
+                this.catchStreak++;
+                
+                // Check if we've reached the streak requirement
+                if (this.catchStreak >= this.requiredStreak && !this.multiplierActive) {
+                    this.multiplierActive = true;
+                    this.multiplier = 2;
+                    // Create multiplier activation animation
+                    this.scoreAnimations.push({
+                        x: this.canvas.width / 2,
+                        y: this.canvas.height / 2,
+                        points: '2X MULTIPLIER!',
+                        life: 2.0
+                    });
+                }
+                
+                // Apply multiplier to points
+                const pointsEarned = drop.points * (this.multiplierActive ? this.multiplier : 1);
+                this.score += pointsEarned;
+                
                 this.audio.playCatchSound(drop.type);
-                // Create score animation
                 this.scoreAnimations.push({
                     x: drop.x,
                     y: drop.y,
-                    points: drop.points,
+                    points: pointsEarned,
                     life: 1.0
                 });
                 return false;
@@ -242,6 +342,7 @@ class Game {
             // Check if drop was missed
             if (drop.y >= this.canvas.height) {
                 this.audio.playMissSound();
+                this.handleMissedDrop();
                 return false;
             }
 
@@ -280,6 +381,37 @@ class Game {
 
         // Draw game elements
         this.drawGameElements();
+
+        // Draw red overlay based on missed drops
+        if (this.overlayOpacity > 0) {
+            this.ctx.fillStyle = `rgba(255, 0, 0, ${this.overlayOpacity})`;
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Gradually fade out the overlay
+            this.overlayOpacity = Math.max(0, this.overlayOpacity - 0.002);
+        }
+
+        // Draw life warning overlay if active
+        if (this.lifeWarning.active) {
+            // Draw red flash
+            this.ctx.fillStyle = `rgba(255, 0, 0, ${this.lifeWarning.opacity * 0.3})`;
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Draw warning text with smaller font
+            this.ctx.fillStyle = `rgba(255, 255, 255, ${this.lifeWarning.opacity})`;
+            this.ctx.font = 'bold 32px Arial';  // Reduced from 48px to 32px
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(this.lifeWarning.message, this.canvas.width / 2, this.canvas.height / 2);
+            this.ctx.textAlign = 'left';
+            
+            // Update warning state
+            this.lifeWarning.timer--;
+            this.lifeWarning.opacity = this.lifeWarning.timer / 60;
+            
+            if (this.lifeWarning.timer <= 0) {
+                this.lifeWarning.active = false;
+            }
+        }
 
         // Draw pause overlay if paused
         if (this.isPaused) {
@@ -336,32 +468,40 @@ class Game {
         this.scoreAnimations.forEach(anim => {
             this.ctx.fillStyle = `rgba(255, 255, 255, ${anim.life})`;
             this.ctx.font = '20px Arial';
-            this.ctx.fillText(`+${anim.points}`, anim.x, anim.y);
+            this.ctx.fillText(typeof anim.points === 'string' ? anim.points : `+${anim.points}`, anim.x, anim.y);
         });
 
-        // Draw score and level with no shadow
+        // Draw score and level
         this.ctx.fillStyle = '#fff';
         this.ctx.font = '24px Arial';
         this.ctx.textBaseline = 'top';
         this.ctx.imageSmoothingEnabled = true;
         
-        // Adjust y-positions for better spacing
+        // Adjust positions for score and level text
         const scoreY = 20;
         const levelY = 60;
-        const progressY = 95;  // Move progress bar down below the level text
         
         this.ctx.fillText(`Score: ${this.score}`, 10, scoreY);
         this.ctx.fillText(`Level ${this.level}`, 10, levelY);
         
-        // Draw progress bar below level text
-        const progressWidth = 200;
-        const progressHeight = 10;
-        this.ctx.fillStyle = '#2c3e50';
-        this.ctx.fillRect(10, progressY, progressWidth, progressHeight);
-        this.ctx.fillStyle = '#27ae60';
-        this.ctx.fillRect(10, progressY, 
-            (this.levelScore / this.scoreToNextLevel) * progressWidth, 
-            progressHeight
+        // Draw vertical progress bar on right side
+        const progressWidth = 30;  // Keep bar width the same
+        const progressY = 100;  // Start below menu area (increased from 20)
+        const progressHeight = this.canvas.height - progressY - 20;  // Adjust height to go from progressY to bottom (with 20px margin)
+        const progressX = this.canvas.width - progressWidth - 20;  // Keep same distance from right edge
+        
+        // Draw background of progress bar
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';  // Translucent white for background
+        this.ctx.fillRect(progressX, progressY, progressWidth, progressHeight);
+        
+        // Draw filled portion of progress bar (from bottom up)
+        this.ctx.fillStyle = '#FFFFFF';  // Pure white for the fill
+        const fillHeight = (this.levelScore / this.scoreToNextLevel) * progressHeight;
+        this.ctx.fillRect(
+            progressX, 
+            progressY + progressHeight - fillHeight,
+            progressWidth, 
+            fillHeight
         );
 
         // Draw level up message if exists
@@ -376,6 +516,43 @@ class Game {
                 this.levelUpMessage.y
             );
             this.ctx.restore();
+        }
+
+        // Draw lives
+        this.ctx.font = '24px Arial';
+        const livesY = 100;
+        const livesX = 10;
+        const heartSpacing = 30;  // Space between hearts
+        const heartsPerRow = 10;  // Maximum hearts per row before wrapping
+
+        // Draw hearts with wrapping
+        for (let i = 0; i < this.lives; i++) {
+            const row = Math.floor(i / heartsPerRow);
+            const col = i % heartsPerRow;
+            this.ctx.fillText('❤️', 
+                livesX + (col * heartSpacing), 
+                livesY + (row * heartSpacing)
+            );
+        }
+
+        // Draw heart power-up if active
+        if (this.heartPowerup.active) {
+            this.ctx.font = '24px Arial';
+            this.ctx.fillText('❤️', this.heartPowerup.x, this.heartPowerup.y);
+        }
+
+        // Add multiplier display
+        if (this.multiplierActive) {
+            this.ctx.fillStyle = '#FFD700'; // Gold color for multiplier
+            this.ctx.font = 'bold 24px Arial';
+            this.ctx.fillText(`${this.multiplier}X MULTIPLIER!`, 10, 140);
+        }
+
+        // Show catch streak when getting close
+        if (!this.multiplierActive && this.catchStreak > 30) {
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            this.ctx.font = '20px Arial';
+            this.ctx.fillText(`Streak: ${this.catchStreak}/${this.requiredStreak}`, 10, 140);
         }
     }
 
@@ -393,13 +570,15 @@ class Game {
     }
 
     updateLevel() {
-        this.levelScore += this.score - this.levelScore;
+        // Calculate new level score
+        const newLevelScore = this.score - (this.scoreToNextLevel * (this.level - 1));
         
-        if (this.levelScore >= this.scoreToNextLevel) {
+        if (newLevelScore >= this.scoreToNextLevel) {
             this.level++;
-            this.levelScore = 0;
+            // Reset level score to the remainder after leveling
+            this.levelScore = newLevelScore - this.scoreToNextLevel;
             // Make each level require significantly more points
-            this.scoreToNextLevel = Math.floor(this.scoreToNextLevel * 1.8);  // Increased from 1.5
+            this.scoreToNextLevel = Math.floor(this.scoreToNextLevel * 2.5);
             
             // Play level up sound
             this.audio.playLevelUp();
@@ -409,12 +588,14 @@ class Game {
             
             // Show level up message
             this.showLevelUpMessage();
+        } else {
+            this.levelScore = newLevelScore;
         }
     }
 
     increaseDifficulty() {
-        // Slower increase in drop rate (cap at 0.08 instead of 0.1)
-        this.dropRate = Math.min(0.03 + (this.level - 1) * 0.003, 0.08);
+        // Slower increase in drop rate (cap at 0.06 instead of 0.1)
+        this.dropRate = Math.min(0.006 + (this.level - 1) * 0.001, 0.03); // Reduced from 0.01 + ... * 0.0015, 0.045
 
         // Increase speeds and points for all sauce types
         for (let type in this.sauceTypes) {
@@ -432,7 +613,7 @@ class Game {
             );
             
             // More gradual points increase
-            sauce.points = Math.floor(base.points * (1 + (this.level - 1) * 0.3));  // Reduced from 0.5
+            sauce.points = Math.floor(base.points * (1 + (this.level - 1) * 0.15));  // Reduced from 0.3 to 0.15
         }
 
         // Adjust sauce probabilities based on level
@@ -470,5 +651,68 @@ class Game {
                 loadingScreen.style.display = 'none';
             }
         }
+    }
+
+    // Update handleMissedDrop method to trigger the warning
+    handleMissedDrop() {
+        // Reset streak and multiplier when a drop is missed
+        if (this.multiplierActive) {
+            this.scoreAnimations.push({
+                x: this.canvas.width / 2,
+                y: this.canvas.height / 2,
+                points: 'MULTIPLIER LOST!',
+                life: 1.0
+            });
+        }
+        this.catchStreak = 0;
+        this.multiplierActive = false;
+        this.multiplier = 1;
+
+        const currentTime = Date.now();
+        this.missedDrops++;
+        
+        // Increase overlay opacity based on number of missed drops
+        this.overlayOpacity = Math.min(0.3, (this.missedDrops / 10) * 0.3);
+        
+        // Check if we've missed 10 drops
+        if (this.missedDrops >= 10) {
+            this.lives--;
+            this.missedDrops = 0;  // Reset counter
+            
+            if (this.lives <= 0) {
+                this.gameOver();
+            } else {
+                // Trigger life lost warning
+                this.lifeWarning = {
+                    active: true,
+                    opacity: 1,
+                    message: `${this.lives} ${this.lives === 1 ? 'LIFE' : 'LIVES'} REMAINING!`,
+                    timer: 60  // Show warning for 60 frames (about 1 second)
+                };
+            }
+        }
+        
+        // Reset counter if 30 seconds have passed
+        if (currentTime - this.lastMissTime >= this.missTimer) {
+            this.missedDrops = 0;
+            this.lastMissTime = currentTime;
+        }
+    }
+
+    // Add gameOver method
+    gameOver() {
+        this.gameStarted = false;
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const finalScore = document.getElementById('final-score');
+        finalScore.textContent = this.score;
+        gameOverScreen.style.display = 'flex';
+    }
+
+    restart() {
+        const gameOverScreen = document.getElementById('game-over-screen');
+        gameOverScreen.style.display = 'none';
+        this.initializeGame();
+        this.gameStarted = true;
+        this.gameLoop();
     }
 } 
