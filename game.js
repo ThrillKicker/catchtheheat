@@ -167,9 +167,6 @@ class Game {
         // Add score animation array
         this.scoreAnimations = [];
         
-        // Initialize audio manager
-        this.audio = new AudioManager();
-
         // In the initializeGame method, add these properties
         this.lives = 3;
         this.missedDrops = 0;
@@ -208,20 +205,15 @@ class Game {
     }
 
     startGame() {
-        // Hide start screen
         const startScreen = document.getElementById('start-screen');
         startScreen.style.display = 'none';
 
-        // Start the game
         this.gameStarted = true;
         
-        // Add event listeners
         window.addEventListener('resize', () => this.setCanvasSize());
         this.canvas.addEventListener('touchmove', (e) => this.handleTouch(e));
         this.canvas.addEventListener('mousemove', (e) => this.handleMouse(e));
         
-        // Start music and game loop
-        this.audio.startMusic();
         this.gameLoop();
     }
 
@@ -360,7 +352,6 @@ class Game {
                 const pointsEarned = drop.points * (this.multiplierActive ? this.multiplier : 1);
                 this.score += pointsEarned;
                 
-                this.audio.playCatchSound(drop.type);
                 this.scoreAnimations.push({
                     x: drop.x,
                     y: drop.y,
@@ -372,7 +363,6 @@ class Game {
 
             // Check if drop was missed
             if (drop.y >= this.canvas.height) {
-                this.audio.playMissSound();
                 this.handleMissedDrop();
                 return false;
             }
@@ -576,18 +566,10 @@ class Game {
         
         if (newLevelScore >= this.scoreToNextLevel) {
             this.level++;
-            // Reset level score to the remainder after leveling
             this.levelScore = newLevelScore - this.scoreToNextLevel;
-            // Make each level require significantly more points
             this.scoreToNextLevel = Math.floor(this.scoreToNextLevel * 2.5);
             
-            // Play level up sound
-            this.audio.playLevelUp();
-            
-            // Increase difficulty
             this.increaseDifficulty();
-            
-            // Show level up message
             this.showLevelUpMessage();
         } else {
             this.levelScore = newLevelScore;

@@ -460,23 +460,6 @@
                 </label>
             </div>
         </div>
-        <div class="settings-section">
-            <h3>Audio</h3>
-            <div class="audio-control">
-                <label>
-                    <button id="musicMute" class="mute-btn">🎵</button>
-                    Music
-                </label>
-                <input type="range" id="musicVolume" min="0" max="100" value="50">
-            </div>
-            <div class="audio-control">
-                <label>
-                    <button id="sfxMute" class="mute-btn">🔊</button>
-                    Sound FX
-                </label>
-                <input type="range" id="sfxVolume" min="0" max="100" value="70">
-            </div>
-        </div>
     </div>
     <canvas id="gameCanvas"></canvas>
     <script>
@@ -515,7 +498,6 @@
             game = new Game();
         };
     </script>
-    <script src="audio-manager.js"></script>
     <script src="game.js"></script>
 </body>
 </html> 
