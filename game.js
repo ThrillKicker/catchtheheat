@@ -1,7 +1,22 @@
 class Game {
     constructor() {
-        // Bind methods to ensure 'this' context
-        this.selectDropType = this.selectDropType.bind(this);
+        // Define selectDropType directly as a property
+        this.selectDropType = () => {
+            const random = Math.random();
+            let cumulativeProbability = 0;
+            
+            for (const type in this.sauceTypes) {
+                cumulativeProbability += this.sauceTypes[type].probability;
+                if (random <= cumulativeProbability) {
+                    return type;
+                }
+            }
+            
+            return 'mild'; // Fallback
+        };
+
+        // Remove the bind since we're using an arrow function
+        // this.selectDropType = this.selectDropType.bind(this);
         this.createSauceDrop = this.createSauceDrop.bind(this);
         
         this.canvas = document.getElementById('gameCanvas');
@@ -227,20 +242,6 @@ class Game {
         const rect = this.canvas.getBoundingClientRect();
         this.taco.x = e.clientX - rect.left - this.taco.width / 2;
         this.taco.y = e.clientY - rect.top - this.taco.height / 2;
-    }
-
-    selectDropType() {
-        const random = Math.random();
-        let cumulativeProbability = 0;
-        
-        for (const type in this.sauceTypes) {
-            cumulativeProbability += this.sauceTypes[type].probability;
-            if (random <= cumulativeProbability) {
-                return type;
-            }
-        }
-        
-        return 'mild'; // Fallback
     }
 
     createSauceDrop() {
