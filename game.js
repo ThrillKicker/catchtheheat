@@ -117,7 +117,7 @@ class Game {
                 color: '#ff6b6b',
                 width: 20,
                 height: 30,
-                speedRange: { min: 2, max: 3 },
+                speedRange: { min: 3, max: 4 },
                 points: 1,
                 probability: 0.6
             },
@@ -125,7 +125,7 @@ class Game {
                 color: '#ff2d2d',
                 width: 20,
                 height: 30,
-                speedRange: { min: 3, max: 4.5 },
+                speedRange: { min: 4, max: 5.5 },
                 points: 2,
                 probability: 0.3
             },
@@ -133,7 +133,7 @@ class Game {
                 color: '#cc0000',
                 width: 20,
                 height: 30,
-                speedRange: { min: 4, max: 6 },
+                speedRange: { min: 5, max: 7 },
                 points: 3,
                 probability: 0.1
             }
@@ -184,6 +184,8 @@ class Game {
         this.multiplier = 1;
         this.multiplierActive = false;
         this.requiredStreak = 50;
+        this.multiplierTimer = 0;  // Add timer for multiplier duration
+        this.multiplierDuration = 30 * 60;  // 30 seconds at 60fps
     }
 
     startGame() {
@@ -315,7 +317,9 @@ class Game {
                 // Check if we've reached a new multiplier level (every 50 catches)
                 if (this.catchStreak >= this.requiredStreak && this.catchStreak % 50 === 0) {
                     this.multiplierActive = true;
-                    this.multiplier = 1 + Math.floor(this.catchStreak / 50);  // Increase multiplier based on streak
+                    this.multiplier = 1 + Math.floor(this.catchStreak / 50);
+                    this.multiplierTimer = this.multiplierDuration;  // Reset timer
+                    
                     // Create multiplier activation animation
                     this.scoreAnimations.push({
                         x: this.canvas.width / 2,
@@ -323,6 +327,22 @@ class Game {
                         points: `${this.multiplier}X MULTIPLIER!`,
                         life: 2.0
                     });
+                }
+                
+                // Update multiplier timer if active
+                if (this.multiplierActive) {
+                    this.multiplierTimer--;
+                    if (this.multiplierTimer <= 0) {
+                        this.multiplierActive = false;
+                        this.multiplier = 1;
+                        // Show multiplier expired message
+                        this.scoreAnimations.push({
+                            x: this.canvas.width / 2,
+                            y: this.canvas.height / 2,
+                            points: 'MULTIPLIER EXPIRED!',
+                            life: 1.0
+                        });
+                    }
                 }
                 
                 // Apply multiplier to points
@@ -512,9 +532,10 @@ class Game {
 
         // Add multiplier display
         if (this.multiplierActive) {
-            this.ctx.fillStyle = '#FFD700'; // Gold color for multiplier
+            this.ctx.fillStyle = '#FFD700';
             this.ctx.font = 'bold 24px Rubik, sans-serif';
-            this.ctx.fillText(`${this.multiplier}X MULTIPLIER!`, 10, 140);
+            const secondsLeft = Math.ceil(this.multiplierTimer / 60);
+            this.ctx.fillText(`${this.multiplier}X MULTIPLIER! (${secondsLeft}s)`, 10, 140);
         }
 
         // Show catch streak when getting close
