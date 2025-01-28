@@ -576,13 +576,16 @@ class Game {
         const progressBarY = this.canvas.height * 0.1;
 
         // Draw background with more transparency
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';  // Changed from 0.9 to 0.3
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         this.ctx.fillRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
 
-        // Draw progress with semi-transparent red
-        const progress = this.levelScore / this.scoreToNextLevel;
+        // Calculate progress based on current level's score only
+        const currentLevelScore = this.score - (this.scoreToNextLevel * (this.level - 1));
+        const progress = Math.min(currentLevelScore / this.scoreToNextLevel, 1);
         const progressHeight = progressBarHeight * progress;
-        this.ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';  // Changed to semi-transparent red
+        
+        // Draw progress with semi-transparent red
+        this.ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
         this.ctx.fillRect(
             progressBarX,
             progressBarY + (progressBarHeight - progressHeight),
@@ -591,8 +594,8 @@ class Game {
         );
 
         // Draw thin black border
-        this.ctx.strokeStyle = '#000000';  // Changed to black
-        this.ctx.lineWidth = 1;  // Changed to 1px
+        this.ctx.strokeStyle = '#000000';
+        this.ctx.lineWidth = 1;
         this.ctx.strokeRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
     }
 
