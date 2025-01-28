@@ -1,5 +1,9 @@
 class Game {
     constructor() {
+        // Bind methods to ensure 'this' context
+        this.selectDropType = this.selectDropType.bind(this);
+        this.createSauceDrop = this.createSauceDrop.bind(this);
+        
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.setCanvasSize();
@@ -240,6 +244,11 @@ class Game {
     }
 
     createSauceDrop() {
+        if (typeof this.selectDropType !== 'function') {
+            console.error('selectDropType not properly initialized');
+            return;
+        }
+        
         // Try to spawn heart power-up if not active
         if (!this.heartPowerup.active && Math.random() < this.heartPowerup.spawnRate) {
             const maxX = this.canvas.width - this.heartPowerup.width - 70;
