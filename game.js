@@ -143,7 +143,7 @@ class Game {
         this.sauceTypes = JSON.parse(JSON.stringify(this.baseSauceTypes));
         
         // Drop frequency increases with level
-        this.dropRate = 0.056;  // Keep this high initial rate
+        this.dropRate = 0.01;  // Was 0.014 (decreased by ~25%)
         
         // Add score animation array
         this.scoreAnimations = [];
@@ -184,13 +184,9 @@ class Game {
         this.multiplier = 1;
         this.multiplierActive = false;
         this.requiredStreak = 50;
-        this.multiplierTimer = 0;  // Add timer for multiplier duration
-        this.multiplierDuration = 30 * 60;  // 30 seconds at 60fps
-
-        // Add these properties to initializeGame method
-        this.lastDropTime = 0;
-        this.maxDropGap = 500;  // Maximum milliseconds between drops
-        this.minActiveDrops = 2;  // Minimum number of drops on screen
+        this.multiplierTimer = 0;
+        this.multiplierDuration = 30000;  // 30 seconds in milliseconds
+        this.lastFrameTime = Date.now();  // Add this to track time between frames
     }
 
     startGame() {
@@ -231,40 +227,68 @@ class Game {
     }
 
     createSauceDrop() {
-        const currentTime = Date.now();
-        const timeSinceLastDrop = currentTime - this.lastDropTime;
-        const needsMoreDrops = this.sauceDrops.length < this.minActiveDrops;
+        // Try to spawn heart power-up if not active
+        if (!this.heartPowerup.active && Math.random() < this.heartPowerup.spawnRate) {
+            const maxX = this.canvas.width - this.heartPowerup.width - 70;
+            this.heartPowerup.active = true;
+            this.heartPowerup.x = Math.random() * maxX;
+            this.heartPowerup.y = 0;
+        }
 
-        // Create a new drop if:
-        // 1. Random chance succeeds OR
-        // 2. Too much time has passed since last drop OR
-        // 3. Not enough active drops
-        if (Math.random() < this.dropRate || 
-            timeSinceLastDrop > this.maxDropGap || 
-            needsMoreDrops) {
+        if (Math.random() < this.dropRate) {
+            // Determine sauce type based on probability
+            const random = Math.random();
+            let sauceType;
             
-            // Create the drop
-            const type = this.selectDropType();
-            const typeProps = this.sauceTypes[type];
+            if (random < this.sauceTypes.mild.probability) {
+                sauceType = 'mild';
+            } else if (random < this.sauceTypes.mild.probability + this.sauceTypes.hot.probability) {
+                sauceType = 'hot';
+            } else {
+                sauceType = 'extraHot';
+            }
+
+            const typeProps = this.sauceTypes[sauceType];
             
-            const drop = {
-                x: Math.random() * (this.canvas.width - typeProps.width),
-                y: -typeProps.height,
+            // Calculate maximum x position to prevent drops behind progress bar
+            const maxX = this.canvas.width - typeProps.width - 70; // 70px = progress bar width (30px) + right margin (20px) + safety margin (20px)
+            
+            this.sauceDrops.push({
+                x: Math.random() * maxX, // Use maxX instead of full canvas width
+                y: 0,
                 width: typeProps.width,
                 height: typeProps.height,
-                speed: typeProps.speedRange.min + Math.random() * (typeProps.speedRange.max - typeProps.speedRange.min),
-                type: type,
+                speed: typeProps.speedRange.min + 
+                       Math.random() * (typeProps.speedRange.max - typeProps.speedRange.min),
+                type: sauceType,
                 points: typeProps.points
-            };
-            
-            this.sauceDrops.push(drop);
-            this.lastDropTime = currentTime;
+            });
         }
     }
 
     update() {
         if (this.isPaused) return;
         
+        // Calculate time since last frame
+        const currentTime = Date.now();
+        const deltaTime = currentTime - this.lastFrameTime;
+        this.lastFrameTime = currentTime;
+
+        // Update multiplier timer if active
+        if (this.multiplierActive) {
+            this.multiplierTimer -= deltaTime;
+            if (this.multiplierTimer <= 0) {
+                this.multiplierActive = false;
+                this.multiplier = 1;
+                this.scoreAnimations.push({
+                    x: this.canvas.width / 2,
+                    y: this.canvas.height / 2,
+                    points: 'MULTIPLIER EXPIRED!',
+                    life: 1.0
+                });
+            }
+        }
+
         // Update heart power-up if active
         if (this.heartPowerup.active) {
             this.heartPowerup.y += this.heartPowerup.speed;
@@ -315,7 +339,7 @@ class Game {
                 if (this.catchStreak >= this.requiredStreak && this.catchStreak % 50 === 0) {
                     this.multiplierActive = true;
                     this.multiplier = 1 + Math.floor(this.catchStreak / 50);
-                    this.multiplierTimer = this.multiplierDuration;  // Reset timer
+                    this.multiplierTimer = this.multiplierDuration;  // Set to 30000ms
                     
                     // Create multiplier activation animation
                     this.scoreAnimations.push({
@@ -324,22 +348,6 @@ class Game {
                         points: `${this.multiplier}X MULTIPLIER!`,
                         life: 2.0
                     });
-                }
-                
-                // Update multiplier timer if active
-                if (this.multiplierActive) {
-                    this.multiplierTimer--;
-                    if (this.multiplierTimer <= 0) {
-                        this.multiplierActive = false;
-                        this.multiplier = 1;
-                        // Show multiplier expired message
-                        this.scoreAnimations.push({
-                            x: this.canvas.width / 2,
-                            y: this.canvas.height / 2,
-                            points: 'MULTIPLIER EXPIRED!',
-                            life: 1.0
-                        });
-                    }
                 }
                 
                 // Apply multiplier to points
@@ -531,7 +539,7 @@ class Game {
         if (this.multiplierActive) {
             this.ctx.fillStyle = '#FFD700';
             this.ctx.font = 'bold 24px Rubik, sans-serif';
-            const secondsLeft = Math.ceil(this.multiplierTimer / 60);
+            const secondsLeft = Math.ceil(this.multiplierTimer / 1000);  // Convert ms to seconds
             this.ctx.fillText(`${this.multiplier}X MULTIPLIER! (${secondsLeft}s)`, 10, 140);
         }
 
@@ -539,7 +547,43 @@ class Game {
         if (!this.multiplierActive && this.catchStreak > 30) {
             this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
             this.ctx.font = '20px Rubik, sans-serif';
-            this.ctx.fillText(`Streak: ${this.catchStreak}/${this.requiredStreak}`, 10, 140);
+            const nextMultiplier = 1 + Math.floor((this.catchStreak + 49) / 50);
+            const nextStreakTarget = nextMultiplier * 50;
+            this.ctx.fillText(`Streak: ${this.catchStreak}/${nextStreakTarget}`, 10, 140);
+        }
+
+        // Draw vertical progress bar on right side
+        const progressWidth = 44;  // Minimum touch target size
+        const progressY = 100;  // Start below menu area
+        const progressHeight = this.canvas.height - progressY - 20;  // Leave margin at bottom
+        const progressX = this.canvas.width - progressWidth - 20;  // Keep distance from right edge
+        
+        // Draw background of progress bar
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';  // Translucent white for background
+        this.ctx.fillRect(progressX, progressY, progressWidth, progressHeight);
+        
+        // Draw filled portion of progress bar (from bottom up)
+        this.ctx.fillStyle = '#FFFFFF';  // Pure white for the fill
+        const fillHeight = (this.levelScore / this.scoreToNextLevel) * progressHeight;
+        this.ctx.fillRect(
+            progressX, 
+            progressY + progressHeight - fillHeight,
+            progressWidth, 
+            fillHeight
+        );
+
+        // Draw level up message if exists
+        if (this.levelUpMessage) {
+            this.ctx.save();
+            this.ctx.fillStyle = `rgba(255, 255, 255, ${this.levelUpMessage.life})`;
+            this.ctx.font = 'bold 48px Rubik, sans-serif';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(
+                this.levelUpMessage.text, 
+                this.canvas.width / 2, 
+                this.levelUpMessage.y
+            );
+            this.ctx.restore();
         }
     }
 
@@ -581,9 +625,9 @@ class Game {
     }
 
     increaseDifficulty() {
-        // Use higher scaling with high base rate
-        this.dropRate = Math.min(0.056 + (this.level - 1) * 0.0045, 0.12);  // Increased scaling to 0.0045
-        
+        // Faster increase in drop rate (cap at 0.035 instead of 0.045)
+        this.dropRate = Math.min(0.01 + (this.level - 1) * 0.0013, 0.035);  // Decreased base rate, scaling, and cap by ~25%
+
         // Increase speeds and points for all sauce types
         for (let type in this.sauceTypes) {
             const sauce = this.sauceTypes[type];
