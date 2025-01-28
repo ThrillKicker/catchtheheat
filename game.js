@@ -208,13 +208,14 @@ class Game {
             timer: 0
         };
 
-        // In the initializeGame method, add these properties
+        // Modify multiplier properties to use timestamps
         this.catchStreak = 0;
         this.multiplier = 1;
         this.multiplierActive = false;
         this.requiredStreak = 50;
-        this.multiplierTimer = 0;  // Add timer for multiplier duration
-        this.multiplierDuration = 30 * 60;  // 30 seconds at 60fps
+        this.multiplierEndTime = 0;  // Changed from timer to end time
+        this.multiplierDuration = 30000;  // 30 seconds in milliseconds (changed from frames)
+        this.highestMultiplier = 1;
     }
 
     startGame() {
@@ -337,25 +338,10 @@ class Game {
                 // Increase catch streak
                 this.catchStreak++;
                 
-                // Check if we've reached a new multiplier level (every 50 catches)
-                if (this.catchStreak >= this.requiredStreak && this.catchStreak % 50 === 0) {
-                    this.multiplierActive = true;
-                    this.multiplier = 1 + Math.floor(this.catchStreak / 50);
-                    this.multiplierTimer = this.multiplierDuration;  // Reset timer
-                    
-                    // Create multiplier activation animation
-                    this.scoreAnimations.push({
-                        x: this.canvas.width / 2,
-                        y: this.canvas.height / 2,
-                        points: `${this.multiplier}X MULTIPLIER!`,
-                        life: 2.0
-                    });
-                }
-                
                 // Update multiplier timer if active
                 if (this.multiplierActive) {
-                    this.multiplierTimer--;
-                    if (this.multiplierTimer <= 0) {
+                    const now = Date.now();
+                    if (now >= this.multiplierEndTime) {
                         this.multiplierActive = false;
                         this.multiplier = 1;
                         // Show multiplier expired message
@@ -364,6 +350,27 @@ class Game {
                             y: this.canvas.height / 2,
                             points: 'MULTIPLIER EXPIRED!',
                             life: 1.0
+                        });
+                        // Keep the streak count but deactivate multiplier
+                        this.catchStreak = Math.max(this.catchStreak, this.requiredStreak - 1);
+                    }
+                }
+                
+                // Check if we've reached a new multiplier level
+                if (this.catchStreak >= this.requiredStreak && this.catchStreak % 50 === 0) {
+                    const newMultiplier = 1 + Math.floor(this.catchStreak / 50);
+                    if (newMultiplier > this.highestMultiplier) {
+                        this.highestMultiplier = newMultiplier;
+                        this.multiplierActive = true;
+                        this.multiplier = newMultiplier;
+                        this.multiplierEndTime = Date.now() + this.multiplierDuration;  // Set end time
+                        
+                        // Create multiplier activation animation
+                        this.scoreAnimations.push({
+                            x: this.canvas.width / 2,
+                            y: this.canvas.height / 2,
+                            points: `${this.multiplier}X MULTIPLIER!`,
+                            life: 2.0
                         });
                     }
                 }
@@ -547,11 +554,11 @@ class Game {
             this.ctx.fillText('❤️', this.heartPowerup.x, this.heartPowerup.y);
         }
 
-        // Add multiplier display
+        // Update multiplier display to use actual seconds remaining
         if (this.multiplierActive) {
             this.ctx.fillStyle = '#FFD700';
             this.ctx.font = 'bold 24px Rubik, sans-serif';
-            const secondsLeft = Math.ceil(this.multiplierTimer / 60);
+            const secondsLeft = Math.ceil((this.multiplierEndTime - Date.now()) / 1000);
             this.ctx.fillText(`${this.multiplier}X MULTIPLIER! (${secondsLeft}s)`, 10, 140);
         }
 
@@ -565,17 +572,17 @@ class Game {
         // Draw vertical progress bar - make it more prominent and closer to edge
         const progressBarWidth = 30;
         const progressBarHeight = this.canvas.height * 0.8;
-        const progressBarX = this.canvas.width - progressBarWidth - 20;  // Changed from 60 to 20
+        const progressBarX = this.canvas.width - progressBarWidth - 20;
         const progressBarY = this.canvas.height * 0.1;
 
-        // Draw background with higher contrast
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';  // Darker background
+        // Draw background with more transparency
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';  // Changed from 0.9 to 0.3
         this.ctx.fillRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
 
-        // Draw progress with brighter color
+        // Draw progress with semi-transparent red
         const progress = this.levelScore / this.scoreToNextLevel;
         const progressHeight = progressBarHeight * progress;
-        this.ctx.fillStyle = '#ff0000';  // Bright red for better visibility
+        this.ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';  // Changed to semi-transparent red
         this.ctx.fillRect(
             progressBarX,
             progressBarY + (progressBarHeight - progressHeight),
@@ -583,9 +590,9 @@ class Game {
             progressHeight
         );
 
-        // Draw border with higher contrast
-        this.ctx.strokeStyle = '#ffffff';  // Pure white border
-        this.ctx.lineWidth = 2;  // Slightly thicker border
+        // Draw thin black border
+        this.ctx.strokeStyle = '#000000';  // Changed to black
+        this.ctx.lineWidth = 1;  // Changed to 1px
         this.ctx.strokeRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
     }
 
@@ -612,7 +619,7 @@ class Game {
         
         if (newLevelScore >= this.scoreToNextLevel) {
             this.level++;
-            this.levelScore = newLevelScore - this.scoreToNextLevel;
+            this.levelScore = 0;  // Reset to 0 instead of keeping remainder
             this.scoreToNextLevel = Math.floor(this.scoreToNextLevel * 2.5);
             
             this.increaseDifficulty();
@@ -679,6 +686,7 @@ class Game {
         this.catchStreak = 0;
         this.multiplierActive = false;
         this.multiplier = 1;
+        this.highestMultiplier = 1;  // Reset highest multiplier
 
         const currentTime = Date.now();
         this.missedDrops++;
