@@ -238,22 +238,27 @@ class Game {
             // Determine sauce type based on probability
             const random = Math.random();
             let sauceType;
+            let cumulativeProbability = 0;
             
-            if (random < this.sauceTypes.mild.probability) {
-                sauceType = 'mild';
-            } else if (random < this.sauceTypes.mild.probability + this.sauceTypes.hot.probability) {
-                sauceType = 'hot';
-            } else {
-                sauceType = 'extraHot';
+            // Calculate sauce type based on probabilities
+            for (const type in this.sauceTypes) {
+                cumulativeProbability += this.sauceTypes[type].probability;
+                if (random <= cumulativeProbability) {
+                    sauceType = type;
+                    break;
+                }
             }
+            
+            // Fallback to mild if something went wrong
+            if (!sauceType) sauceType = 'mild';
 
             const typeProps = this.sauceTypes[sauceType];
             
             // Calculate maximum x position to prevent drops behind progress bar
-            const maxX = this.canvas.width - typeProps.width - 70; // 70px = progress bar width (30px) + right margin (20px) + safety margin (20px)
+            const maxX = this.canvas.width - typeProps.width - 70;
             
             this.sauceDrops.push({
-                x: Math.random() * maxX, // Use maxX instead of full canvas width
+                x: Math.random() * maxX,
                 y: 0,
                 width: typeProps.width,
                 height: typeProps.height,

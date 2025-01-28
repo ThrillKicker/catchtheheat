@@ -3,27 +3,30 @@ class AudioManager {
         try {
             this.sounds = {
                 music: new Audio('assets/background-music.mp3'),
-                catch: {
-                    mild: new Audio('assets/catch-mild.mp3'),
-                    hot: new Audio('assets/catch-hot.mp3'),
-                    extraHot: new Audio('assets/catch-extra-hot.mp3')
-                },
-                miss: new Audio('assets/miss.mp3'),
-                levelUp: new Audio('assets/level-up.mp3')
+                catchMild: new Audio('assets/audio/catch-mild.mp3'),
+                catchHot: new Audio('assets/audio/catch-hot.mp3'),
+                catchExtraHot: new Audio('assets/audio/catch-extra-hot.mp3'),
+                miss: new Audio('assets/audio/miss.mp3'),
+                levelUp: new Audio('assets/audio/level-up.mp3')
             };
 
             // Set up music
             this.sounds.music.loop = true;
+
+            // Add error handlers for each sound
+            for (let sound in this.sounds) {
+                this.sounds[sound].onerror = (e) => {
+                    console.warn(`Failed to load sound: ${sound}`, e);
+                };
+            }
         } catch (error) {
             console.log("Audio initialization failed:", error);
             // Create dummy audio objects if files are missing
             this.sounds = {
                 music: { play: () => {}, volume: 1, muted: false },
-                catch: {
-                    mild: { play: () => {}, volume: 1 },
-                    hot: { play: () => {}, volume: 1 },
-                    extraHot: { play: () => {}, volume: 1 }
-                },
+                catchMild: { play: () => {}, volume: 1 },
+                catchHot: { play: () => {}, volume: 1 },
+                catchExtraHot: { play: () => {}, volume: 1 },
                 miss: { play: () => {}, volume: 1 },
                 levelUp: { play: () => {}, volume: 1 }
             };
@@ -77,7 +80,7 @@ class AudioManager {
 
     playCatchSound(sauceType) {
         if (!this.sfxMuted) {
-            const sound = this.sounds.catch[sauceType];
+            const sound = this.sounds[`catch${sauceType.charAt(0).toUpperCase() + sauceType.slice(1)}`];
             sound.volume = this.sfxVolume;
             sound.currentTime = 0;
             sound.play().catch(error => {
