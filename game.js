@@ -397,10 +397,40 @@ class Game {
     }
 
     draw() {
-        // Clear canvas
+        // Clear the canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Draw the background
+        this.ctx.fillStyle = '#34495e';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Draw game elements
+        // Draw the taco/player
+        if (this.spritesReady.players[this.currentSprite]) {
+            this.ctx.drawImage(
+                this.sprites.players[this.currentSprite],
+                this.taco.x,
+                this.taco.y,
+                this.taco.width,
+                this.taco.height
+            );
+        } else {
+            this.fallbackTacoDraw();
+        }
+
+        // Draw sauce drops
+        this.sauceDrops.forEach(drop => {
+            if (this.spritesReady.sauceDrops[drop.type]) {
+                this.ctx.drawImage(
+                    this.sprites.sauceDrops[drop.type],
+                    drop.x,
+                    drop.y,
+                    drop.width,
+                    drop.height
+                );
+            }
+        });
+
+        // Draw game elements (score, lives, progress bar, etc.)
         this.drawGameElements();
 
         // Draw red overlay based on missed drops
@@ -448,43 +478,6 @@ class Game {
     }
 
     drawGameElements() {
-        // Draw player sprite
-        if (this.spritesReady.players[this.currentSprite]) {
-            this.ctx.drawImage(
-                this.sprites.players[this.currentSprite],
-                this.taco.x,
-                this.taco.y,
-                this.taco.width,
-                this.taco.height
-            );
-        } else {
-            this.fallbackTacoDraw();
-        }
-
-        // Draw sauce drops
-        this.sauceDrops.forEach(drop => {
-            const sprite = this.sprites.sauceDrops[drop.type];
-            if (this.spritesReady.sauceDrops[drop.type]) {
-                this.ctx.drawImage(
-                    sprite,
-                    drop.x,
-                    drop.y,
-                    drop.width,
-                    drop.height
-                );
-            } else {
-                // Fallback to colored triangle if sprite not loaded
-                const typeProps = this.sauceTypes[drop.type];
-                this.ctx.fillStyle = typeProps.color;
-                this.ctx.beginPath();
-                this.ctx.moveTo(drop.x + drop.width/2, drop.y);
-                this.ctx.lineTo(drop.x + drop.width, drop.y + drop.height);
-                this.ctx.lineTo(drop.x, drop.y + drop.height);
-                this.ctx.closePath();
-                this.ctx.fill();
-            }
-        });
-
         // Draw score animations
         this.scoreAnimations.forEach(anim => {
             this.ctx.fillStyle = `rgba(255, 255, 255, ${anim.life})`;
