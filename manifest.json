@@ -2,7 +2,7 @@
   "name": "Catch the Heat",
   "short_name": "CatchHeat",
   "description": "Catch hot sauce drops with your taco!",
-  "start_url": "/",
+  "start_url": "./",
   "display": "fullscreen",
   "background_color": "#2c3e50",
   "theme_color": "#34495e",
