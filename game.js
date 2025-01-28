@@ -67,18 +67,6 @@ class Game {
             this.handleSpriteLoad();
         };
 
-        // Add error handlers for sprite loading
-        this.sprites.players.taco.onerror = (e) => {
-            console.error('Error loading taco sprite:', e);
-            this.spritesReady.players.taco = true; // Allow game to continue with fallback
-            this.handleSpriteLoad();
-        };
-        this.sprites.players.wing.onerror = (e) => {
-            console.error('Error loading wing sprite:', e);
-            this.spritesReady.players.wing = true;
-            this.handleSpriteLoad();
-        };
-
         // Set up sprite selection handler
         const spriteInputs = document.querySelectorAll('input[name="sprite"]');
         spriteInputs.forEach(input => {
@@ -155,7 +143,7 @@ class Game {
         this.sauceTypes = JSON.parse(JSON.stringify(this.baseSauceTypes));
         
         // Drop frequency increases with level
-        this.dropRate = 0.01;  // Was 0.014 (decreased by ~25%)
+        this.dropRate = 0.006; // Reduced from 0.01 to 0.006 (0.6% chance per frame)
         
         // Add score animation array
         this.scoreAnimations = [];
@@ -196,45 +184,26 @@ class Game {
         this.multiplier = 1;
         this.multiplierActive = false;
         this.requiredStreak = 50;
-        this.multiplierTimer = 0;
-        this.multiplierDuration = 30000;  // 30 seconds in milliseconds
-        this.lastFrameTime = Date.now();  // Add this to track time between frames
+        this.multiplierTimer = 0;  // Add timer for multiplier duration
+        this.multiplierDuration = 30 * 60;  // 30 seconds at 60fps
     }
 
     startGame() {
-        console.log('Starting game...');
-        
-        // Check if sprites are loaded
-        if (this.loadedSprites < this.totalSprites) {
-            console.log('Waiting for sprites to load...');
-            return;
-        }
-
         // Hide start screen
         const startScreen = document.getElementById('start-screen');
-        if (startScreen) {
-            startScreen.style.display = 'none';
-        } else {
-            console.error('Start screen element not found');
-        }
+        startScreen.style.display = 'none';
 
         // Start the game
-        try {
-            this.gameStarted = true;
-            
-            // Add event listeners
-            window.addEventListener('resize', () => this.setCanvasSize());
-            this.canvas.addEventListener('touchmove', (e) => this.handleTouch(e));
-            this.canvas.addEventListener('mousemove', (e) => this.handleMouse(e));
-            
-            // Start music and game loop
-            this.audio.startMusic();
-            requestAnimationFrame(() => this.gameLoop());
-            
-            console.log('Game started successfully');
-        } catch (error) {
-            console.error('Error starting game:', error);
-        }
+        this.gameStarted = true;
+        
+        // Add event listeners
+        window.addEventListener('resize', () => this.setCanvasSize());
+        this.canvas.addEventListener('touchmove', (e) => this.handleTouch(e));
+        this.canvas.addEventListener('mousemove', (e) => this.handleMouse(e));
+        
+        // Start music and game loop
+        this.audio.startMusic();
+        this.gameLoop();
     }
 
     setCanvasSize() {
@@ -256,22 +225,6 @@ class Game {
         this.taco.y = e.clientY - rect.top - this.taco.height / 2;
     }
 
-    selectDropType() {
-        const random = Math.random();
-        let cumulativeProbability = 0;
-        
-        // Check each sauce type in order
-        for (const type in this.sauceTypes) {
-            cumulativeProbability += this.sauceTypes[type].probability;
-            if (random <= cumulativeProbability) {
-                return type;
-            }
-        }
-        
-        // Fallback to mild if something goes wrong
-        return 'mild';
-    }
-
     createSauceDrop() {
         // Try to spawn heart power-up if not active
         if (!this.heartPowerup.active && Math.random() < this.heartPowerup.spawnRate) {
@@ -282,15 +235,25 @@ class Game {
         }
 
         if (Math.random() < this.dropRate) {
-            // Use the selectDropType method to determine sauce type
-            const sauceType = this.selectDropType();
+            // Determine sauce type based on probability
+            const random = Math.random();
+            let sauceType;
+            
+            if (random < this.sauceTypes.mild.probability) {
+                sauceType = 'mild';
+            } else if (random < this.sauceTypes.mild.probability + this.sauceTypes.hot.probability) {
+                sauceType = 'hot';
+            } else {
+                sauceType = 'extraHot';
+            }
+
             const typeProps = this.sauceTypes[sauceType];
             
             // Calculate maximum x position to prevent drops behind progress bar
-            const maxX = this.canvas.width - typeProps.width - 70;
+            const maxX = this.canvas.width - typeProps.width - 70; // 70px = progress bar width (30px) + right margin (20px) + safety margin (20px)
             
             this.sauceDrops.push({
-                x: Math.random() * maxX,
+                x: Math.random() * maxX, // Use maxX instead of full canvas width
                 y: 0,
                 width: typeProps.width,
                 height: typeProps.height,
@@ -305,26 +268,6 @@ class Game {
     update() {
         if (this.isPaused) return;
         
-        // Calculate time since last frame
-        const currentTime = Date.now();
-        const deltaTime = currentTime - this.lastFrameTime;
-        this.lastFrameTime = currentTime;
-
-        // Update multiplier timer if active
-        if (this.multiplierActive) {
-            this.multiplierTimer -= deltaTime;
-            if (this.multiplierTimer <= 0) {
-                this.multiplierActive = false;
-                this.multiplier = 1;
-                this.scoreAnimations.push({
-                    x: this.canvas.width / 2,
-                    y: this.canvas.height / 2,
-                    points: 'MULTIPLIER EXPIRED!',
-                    life: 1.0
-                });
-            }
-        }
-
         // Update heart power-up if active
         if (this.heartPowerup.active) {
             this.heartPowerup.y += this.heartPowerup.speed;
@@ -375,7 +318,7 @@ class Game {
                 if (this.catchStreak >= this.requiredStreak && this.catchStreak % 50 === 0) {
                     this.multiplierActive = true;
                     this.multiplier = 1 + Math.floor(this.catchStreak / 50);
-                    this.multiplierTimer = this.multiplierDuration;  // Set to 30000ms
+                    this.multiplierTimer = this.multiplierDuration;  // Reset timer
                     
                     // Create multiplier activation animation
                     this.scoreAnimations.push({
@@ -384,6 +327,22 @@ class Game {
                         points: `${this.multiplier}X MULTIPLIER!`,
                         life: 2.0
                     });
+                }
+                
+                // Update multiplier timer if active
+                if (this.multiplierActive) {
+                    this.multiplierTimer--;
+                    if (this.multiplierTimer <= 0) {
+                        this.multiplierActive = false;
+                        this.multiplier = 1;
+                        // Show multiplier expired message
+                        this.scoreAnimations.push({
+                            x: this.canvas.width / 2,
+                            y: this.canvas.height / 2,
+                            points: 'MULTIPLIER EXPIRED!',
+                            life: 1.0
+                        });
+                    }
                 }
                 
                 // Apply multiplier to points
@@ -575,7 +534,7 @@ class Game {
         if (this.multiplierActive) {
             this.ctx.fillStyle = '#FFD700';
             this.ctx.font = 'bold 24px Rubik, sans-serif';
-            const secondsLeft = Math.ceil(this.multiplierTimer / 1000);  // Convert ms to seconds
+            const secondsLeft = Math.ceil(this.multiplierTimer / 60);
             this.ctx.fillText(`${this.multiplier}X MULTIPLIER! (${secondsLeft}s)`, 10, 140);
         }
 
@@ -583,43 +542,7 @@ class Game {
         if (!this.multiplierActive && this.catchStreak > 30) {
             this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
             this.ctx.font = '20px Rubik, sans-serif';
-            const nextMultiplier = 1 + Math.floor((this.catchStreak + 49) / 50);
-            const nextStreakTarget = nextMultiplier * 50;
-            this.ctx.fillText(`Streak: ${this.catchStreak}/${nextStreakTarget}`, 10, 140);
-        }
-
-        // Draw vertical progress bar on right side
-        const progressWidth = 44;  // Minimum touch target size
-        const progressY = 100;  // Start below menu area
-        const progressHeight = this.canvas.height - progressY - 20;  // Leave margin at bottom
-        const progressX = this.canvas.width - progressWidth - 20;  // Keep distance from right edge
-        
-        // Draw background of progress bar
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';  // Translucent white for background
-        this.ctx.fillRect(progressX, progressY, progressWidth, progressHeight);
-        
-        // Draw filled portion of progress bar (from bottom up)
-        this.ctx.fillStyle = '#FFFFFF';  // Pure white for the fill
-        const fillHeight = (this.levelScore / this.scoreToNextLevel) * progressHeight;
-        this.ctx.fillRect(
-            progressX, 
-            progressY + progressHeight - fillHeight,
-            progressWidth, 
-            fillHeight
-        );
-
-        // Draw level up message if exists
-        if (this.levelUpMessage) {
-            this.ctx.save();
-            this.ctx.fillStyle = `rgba(255, 255, 255, ${this.levelUpMessage.life})`;
-            this.ctx.font = 'bold 48px Rubik, sans-serif';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText(
-                this.levelUpMessage.text, 
-                this.canvas.width / 2, 
-                this.levelUpMessage.y
-            );
-            this.ctx.restore();
+            this.ctx.fillText(`Streak: ${this.catchStreak}/${this.requiredStreak}`, 10, 140);
         }
     }
 
@@ -629,19 +552,11 @@ class Game {
     }
 
     gameLoop() {
-        if (!this.gameStarted) {
-            console.log('Game loop stopped - game not started');
-            return;
-        }
+        if (!this.gameStarted) return;
         
-        try {
-            this.update();
-            this.draw();
-            requestAnimationFrame(() => this.gameLoop());
-        } catch (error) {
-            console.error('Error in game loop:', error);
-            this.gameStarted = false;
-        }
+        this.update();
+        this.draw();
+        requestAnimationFrame(() => this.gameLoop());
     }
 
     updateLevel() {
@@ -669,8 +584,8 @@ class Game {
     }
 
     increaseDifficulty() {
-        // Faster increase in drop rate (cap at 0.035 instead of 0.045)
-        this.dropRate = Math.min(0.01 + (this.level - 1) * 0.0013, 0.035);  // Decreased base rate, scaling, and cap by ~25%
+        // Slower increase in drop rate (cap at 0.06 instead of 0.1)
+        this.dropRate = Math.min(0.006 + (this.level - 1) * 0.001, 0.03); // Reduced from 0.01 + ... * 0.0015, 0.045
 
         // Increase speeds and points for all sauce types
         for (let type in this.sauceTypes) {
