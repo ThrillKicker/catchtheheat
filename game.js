@@ -562,24 +562,20 @@ class Game {
             this.ctx.fillText(`Streak: ${this.catchStreak}/${this.requiredStreak}`, 10, 140);
         }
 
-        // Draw vertical progress bar with debug outline
+        // Draw vertical progress bar - make it more prominent
         const progressBarWidth = 30;
         const progressBarHeight = this.canvas.height * 0.8;
         const progressBarX = this.canvas.width - progressBarWidth - 60;
         const progressBarY = this.canvas.height * 0.1;
 
-        // Debug outline to see where the bar should be
-        this.ctx.fillStyle = 'yellow';
-        this.ctx.fillRect(progressBarX - 2, progressBarY - 2, progressBarWidth + 4, progressBarHeight + 4);
-
-        // Draw background
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        // Draw background with higher contrast
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';  // Darker background
         this.ctx.fillRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
 
-        // Draw progress
+        // Draw progress with brighter color
         const progress = this.levelScore / this.scoreToNextLevel;
         const progressHeight = progressBarHeight * progress;
-        this.ctx.fillStyle = '#ff4757';
+        this.ctx.fillStyle = '#ff0000';  // Bright red for better visibility
         this.ctx.fillRect(
             progressBarX,
             progressBarY + (progressBarHeight - progressHeight),
@@ -587,17 +583,10 @@ class Game {
             progressHeight
         );
 
-        // Draw border
-        this.ctx.strokeStyle = 'white';
-        this.ctx.lineWidth = 1;
+        // Draw border with higher contrast
+        this.ctx.strokeStyle = '#ffffff';  // Pure white border
+        this.ctx.lineWidth = 2;  // Slightly thicker border
         this.ctx.strokeRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
-
-        // Debug text
-        this.ctx.fillStyle = 'white';
-        this.ctx.font = '12px Arial';
-        this.ctx.fillText(`Progress: ${Math.round(progress * 100)}%`, progressBarX, progressBarY - 5);
-        this.ctx.fillText(`Level Score: ${this.levelScore}`, progressBarX, progressBarY - 20);
-        this.ctx.fillText(`Next Level: ${this.scoreToNextLevel}`, progressBarX, progressBarY - 35);
     }
 
     fallbackTacoDraw() {
