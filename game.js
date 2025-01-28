@@ -312,15 +312,15 @@ class Game {
                 // Increase catch streak
                 this.catchStreak++;
                 
-                // Check if we've reached the streak requirement
-                if (this.catchStreak >= this.requiredStreak && !this.multiplierActive) {
+                // Check if we've reached a new multiplier level (every 50 catches)
+                if (this.catchStreak >= this.requiredStreak && this.catchStreak % 50 === 0) {
                     this.multiplierActive = true;
-                    this.multiplier = 2;
+                    this.multiplier = 1 + Math.floor(this.catchStreak / 50);  // Increase multiplier based on streak
                     // Create multiplier activation animation
                     this.scoreAnimations.push({
                         x: this.canvas.width / 2,
                         y: this.canvas.height / 2,
-                        points: '2X MULTIPLIER!',
+                        points: `${this.multiplier}X MULTIPLIER!`,
                         life: 2.0
                     });
                 }
@@ -467,63 +467,32 @@ class Game {
         // Draw score animations
         this.scoreAnimations.forEach(anim => {
             this.ctx.fillStyle = `rgba(255, 255, 255, ${anim.life})`;
-            this.ctx.font = '20px Arial';
+            this.ctx.font = 'bold 20px Rubik, sans-serif';
             this.ctx.fillText(typeof anim.points === 'string' ? anim.points : `+${anim.points}`, anim.x, anim.y);
         });
 
         // Draw score and level
-        this.ctx.fillStyle = '#fff';
-        this.ctx.font = '24px Arial';
-        this.ctx.textBaseline = 'top';
-        this.ctx.imageSmoothingEnabled = true;
-        
-        // Adjust positions for score and level text
-        const scoreY = 20;
-        const levelY = 60;
-        
-        this.ctx.fillText(`Score: ${this.score}`, 10, scoreY);
-        this.ctx.fillText(`Level ${this.level}`, 10, levelY);
-        
-        // Draw vertical progress bar on right side
-        const progressWidth = 30;  // Keep bar width the same
-        const progressY = 100;  // Start below menu area (increased from 20)
-        const progressHeight = this.canvas.height - progressY - 20;  // Adjust height to go from progressY to bottom (with 20px margin)
-        const progressX = this.canvas.width - progressWidth - 20;  // Keep same distance from right edge
-        
-        // Draw background of progress bar
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';  // Translucent white for background
-        this.ctx.fillRect(progressX, progressY, progressWidth, progressHeight);
-        
-        // Draw filled portion of progress bar (from bottom up)
-        this.ctx.fillStyle = '#FFFFFF';  // Pure white for the fill
-        const fillHeight = (this.levelScore / this.scoreToNextLevel) * progressHeight;
-        this.ctx.fillRect(
-            progressX, 
-            progressY + progressHeight - fillHeight,
-            progressWidth, 
-            fillHeight
-        );
+        this.ctx.font = 'bold 20px Rubik, sans-serif';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillStyle = '#FFFFFF';
 
-        // Draw level up message if exists
-        if (this.levelUpMessage) {
-            this.ctx.save();
-            this.ctx.fillStyle = `rgba(255, 255, 255, ${this.levelUpMessage.life})`;
-            this.ctx.font = 'bold 48px Arial';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText(
-                this.levelUpMessage.text, 
-                this.canvas.width / 2, 
-                this.levelUpMessage.y
-            );
-            this.ctx.restore();
-        }
+        // Adjust vertical spacing
+        const scoreY = 30;
+        const levelY = 60;  // Was 70
+        const livesY = 110;  // Was 100, increased gap between level and lives
 
-        // Draw lives
+        // Draw text
+        const scoreText = `Score: ${this.score}`;
+        const levelText = `Level ${this.level}`;
+        const padding = 15;
+        this.ctx.fillText(scoreText, padding, scoreY);
+        this.ctx.fillText(levelText, padding, levelY);
+
+        // Draw lives with updated Y position
         this.ctx.font = '24px Arial';
-        const livesY = 100;
         const livesX = 10;
-        const heartSpacing = 30;  // Space between hearts
-        const heartsPerRow = 10;  // Maximum hearts per row before wrapping
+        const heartSpacing = 30;
+        const heartsPerRow = 10;
 
         // Draw hearts with wrapping
         for (let i = 0; i < this.lives; i++) {
@@ -544,14 +513,14 @@ class Game {
         // Add multiplier display
         if (this.multiplierActive) {
             this.ctx.fillStyle = '#FFD700'; // Gold color for multiplier
-            this.ctx.font = 'bold 24px Arial';
+            this.ctx.font = 'bold 24px Rubik, sans-serif';
             this.ctx.fillText(`${this.multiplier}X MULTIPLIER!`, 10, 140);
         }
 
         // Show catch streak when getting close
         if (!this.multiplierActive && this.catchStreak > 30) {
             this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-            this.ctx.font = '20px Arial';
+            this.ctx.font = '20px Rubik, sans-serif';
             this.ctx.fillText(`Streak: ${this.catchStreak}/${this.requiredStreak}`, 10, 140);
         }
     }
@@ -706,6 +675,25 @@ class Game {
         const finalScore = document.getElementById('final-score');
         finalScore.textContent = this.score;
         gameOverScreen.style.display = 'flex';
+
+        // Set up share button
+        const shareButton = document.getElementById('share-button');
+        shareButton.addEventListener('click', async () => {
+            try {
+                if (navigator.share) {
+                    await navigator.share({
+                        title: 'Catch the Heat!',
+                        text: `I scored ${this.score} points in Catch the Heat! Can you beat my score?`,
+                        url: window.location.href
+                    });
+                } else {
+                    // Fallback for browsers that don't support Web Share API
+                    alert('Share not supported on this browser');
+                }
+            } catch (err) {
+                console.log('Error sharing:', err);
+            }
+        });
     }
 
     restart() {

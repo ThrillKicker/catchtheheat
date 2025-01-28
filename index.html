@@ -33,6 +33,10 @@
     <link rel="apple-touch-startup-image" href="assets/splash/apple-splash-1125-2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
     <link rel="apple-touch-startup-image" href="assets/splash/apple-splash-828-1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;800&display=swap" rel="stylesheet">
+
     <style>
         body {
             margin: 0;
@@ -43,6 +47,7 @@
             min-height: 100vh;
             background-color: #2c3e50;
             touch-action: none;
+            font-family: 'Rubik', sans-serif;
         }
         canvas {
             background-color: #34495e;
@@ -61,7 +66,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             color: white;
-            font-family: Arial, sans-serif;
+            font-family: 'Rubik', sans-serif;
             font-size: 24px;
             display: none;
         }
@@ -72,9 +77,9 @@
             background: transparent;
             border: none;
             cursor: pointer;
-            width: 30px;
-            height: 30px;
-            padding: 0;
+            width: 44px;
+            height: 44px;
+            padding: 10px;
             z-index: 2;
             box-shadow: none;
             -webkit-appearance: none;
@@ -103,9 +108,9 @@
             top: 0;
             right: 0;
             background: rgba(0, 0, 0, 0.9);
-            padding: 50px 20px 20px 20px;
+            padding: 60px 30px 30px 30px;
             color: white;
-            font-family: Arial, sans-serif;
+            font-family: 'Rubik', sans-serif;
             height: 100vh;
             min-width: 200px;
             transform: translateX(100%);
@@ -116,31 +121,32 @@
             transform: translateX(0);
         }
         .audio-control {
-            margin: 20px 0;
+            margin: 30px 0;
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
         .audio-control label {
+            min-height: 44px;
             display: flex;
             align-items: center;
-            gap: 10px;
         }
         .mute-btn {
+            min-width: 44px;
+            min-height: 44px;
+            padding: 10px;
+            margin: 5px;
             background: #e74c3c;
             border: none;
             color: white;
-            padding: 8px 12px;
-            border-radius: 3px;
             cursor: pointer;
-            width: 40px;
         }
         .mute-btn.muted {
             background: #95a5a6;
         }
         input[type="range"] {
-            width: 100%;
-            margin: 10px 0;
+            height: 44px;
+            margin: 15px 0;
         }
         #start-screen {
             position: fixed;
@@ -154,15 +160,68 @@
             align-items: center;
             z-index: 1000;
         }
+        .start-content {
+            text-align: center;
+            color: white;
+            max-width: 800px;
+            padding: 30px;
+        }
+        .start-content h1 {
+            font-size: 48px;
+            color: #e74c3c;
+            margin-bottom: 30px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .instructions {
+            text-align: left;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px 40px;
+            margin: 20px;
+            border-radius: 15px;
+        }
+        .instructions h2 {
+            color: #e74c3c;
+            margin-bottom: 15px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .instructions ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .instructions li {
+            margin: 15px 0;
+            font-size: 17px;
+            line-height: 1.4;
+            font-weight: 600;
+        }
+        .instructions li ul {
+            margin-left: 30px;
+            margin-top: 8px;
+        }
+        .instructions li ul li {
+            font-size: 15px;
+            margin: 8px 0;
+        }
         #start-button {
+            min-height: 44px;
+            min-width: 44px;
+            padding: 12px 30px;
+            margin: 10px;
             background: #e74c3c;
             color: white;
             border: none;
-            padding: 20px 40px;
-            font-size: 24px;
+            font-size: 20px;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
         #start-button:hover {
             background: #c0392b;
@@ -175,7 +234,9 @@
 
         .sprite-option {
             cursor: pointer;
-            padding: 10px;
+            padding: 15px;
+            min-width: 44px;
+            min-height: 44px;
             border-radius: 8px;
             background: rgba(255, 255, 255, 0.05);
             transition: all 0.3s ease;
@@ -190,8 +251,8 @@
         }
 
         .sprite-option img {
-            width: 60px;
-            height: 60px;
+            width: 44px;
+            height: 44px;
             transition: all 0.3s ease;
             filter: brightness(0.6);
         }
@@ -246,26 +307,82 @@
             align-items: center;
             z-index: 1000;
             color: white;
+            padding: 30px;
         }
 
         #game-over-screen h1 {
             font-size: 48px;
-            margin-bottom: 20px;
+            margin: 30px 0;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #game-over-screen p {
+            font-size: 20px;
+            margin: 20px 0;
+        }
+
+        .game-over-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
         }
 
         #restart-button {
-            background: #e74c3c;
+            background: #27ae60;
             color: white;
             border: none;
-            padding: 20px 40px;
-            font-size: 24px;
+            padding: 12px 30px;
+            margin: 0;
+            font-size: 20px;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            min-width: 200px;
         }
 
         #restart-button:hover {
-            background: #c0392b;
+            background: #219a52;
+        }
+
+        #share-button {
+            background: #34495e;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            margin: 0;
+            font-size: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            min-width: 200px;
+        }
+
+        #share-button:hover {
+            background: #2c3e50;
+        }
+
+        .settings-section h2, .settings-section h3 {
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Add font-family to any elements that might inherit Arial */
+        * {
+            font-family: 'Rubik', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
         }
     </style>
 </head>
@@ -275,12 +392,34 @@
         <p>Loading game...</p>
     </div>
     <div id="start-screen">
-        <button id="start-button">Start</button>
+        <div class="start-content">
+            <h1>Catch the Heat!</h1>
+            <div class="instructions">
+                <h2>How to Play</h2>
+                <ul>
+                    <li>🎮 Move to catch falling sauce drops</li>
+                    <li>🌶️ Sauce Points:
+                        <ul>
+                            <li>Mild = 1</li>
+                            <li>Hot = 2</li>
+                            <li>Extra Hot = 3</li>
+                        </ul>
+                    </li>
+                    <li>⚡ Streak Bonus: 2X at 50 drops, 3X at 100, 4X at 150...</li>
+                    <li>❤️ Collect hearts for extra lives (max 5)</li>
+                    <li>⚠️ Lose a life after missing 10 drops</li>
+                </ul>
+            </div>
+            <button id="start-button">Play</button>
+        </div>
     </div>
     <div id="game-over-screen" style="display: none;">
         <h1>Game Over!</h1>
         <p>Final Score: <span id="final-score">0</span></p>
-        <button id="restart-button">Play Again?</button>
+        <div class="game-over-buttons">
+            <button id="restart-button">Play Again?</button>
+            <button id="share-button">Share Score</button>
+        </div>
     </div>
     <button id="menu-button">
         <span class="hamburger-line"></span>
