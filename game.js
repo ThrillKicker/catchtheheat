@@ -626,13 +626,15 @@ class Game {
         
         if (newLevelScore >= this.scoreToNextLevel) {
             this.level++;
-            this.levelScore = 0;  // Reset to 0 instead of keeping remainder
+            // Calculate the remainder score for the new level
+            this.levelScore = Math.max(0, newLevelScore - this.scoreToNextLevel);
             this.scoreToNextLevel = Math.floor(this.scoreToNextLevel * 2.5);
             
             this.increaseDifficulty();
             this.showLevelUpMessage();
         } else {
-            this.levelScore = newLevelScore;
+            // Ensure levelScore is never negative
+            this.levelScore = Math.max(0, newLevelScore);
         }
     }
 
