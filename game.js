@@ -225,6 +225,22 @@ class Game {
         this.taco.y = e.clientY - rect.top - this.taco.height / 2;
     }
 
+    selectDropType() {
+        const random = Math.random();
+        let cumulativeProbability = 0;
+        
+        // Check each sauce type in order
+        for (const type in this.sauceTypes) {
+            cumulativeProbability += this.sauceTypes[type].probability;
+            if (random <= cumulativeProbability) {
+                return type;
+            }
+        }
+        
+        // Fallback to mild if something goes wrong
+        return 'mild';
+    }
+
     createSauceDrop() {
         // Try to spawn heart power-up if not active
         if (!this.heartPowerup.active && Math.random() < this.heartPowerup.spawnRate) {
@@ -235,23 +251,8 @@ class Game {
         }
 
         if (Math.random() < this.dropRate) {
-            // Determine sauce type based on probability
-            const random = Math.random();
-            let sauceType;
-            let cumulativeProbability = 0;
-            
-            // Calculate sauce type based on probabilities
-            for (const type in this.sauceTypes) {
-                cumulativeProbability += this.sauceTypes[type].probability;
-                if (random <= cumulativeProbability) {
-                    sauceType = type;
-                    break;
-                }
-            }
-            
-            // Fallback to mild if something went wrong
-            if (!sauceType) sauceType = 'mild';
-
+            // Use the selectDropType method to determine sauce type
+            const sauceType = this.selectDropType();
             const typeProps = this.sauceTypes[sauceType];
             
             // Calculate maximum x position to prevent drops behind progress bar
