@@ -229,7 +229,6 @@ class Game {
         const random = Math.random();
         let cumulativeProbability = 0;
         
-        // Check each sauce type in order
         for (const type in this.sauceTypes) {
             cumulativeProbability += this.sauceTypes[type].probability;
             if (random <= cumulativeProbability) {
@@ -237,15 +236,10 @@ class Game {
             }
         }
         
-        // Fallback to mild if something goes wrong
-        return 'mild';
+        return 'mild'; // Fallback
     }
 
     createSauceDrop() {
-        console.log('Creating sauce drop...');
-        console.log('this.selectDropType exists?', typeof this.selectDropType === 'function');
-        console.log('Available methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(this)));
-
         // Try to spawn heart power-up if not active
         if (!this.heartPowerup.active && Math.random() < this.heartPowerup.spawnRate) {
             const maxX = this.canvas.width - this.heartPowerup.width - 70;
@@ -255,32 +249,20 @@ class Game {
         }
 
         if (Math.random() < this.dropRate) {
-            try {
-                // Use the selectDropType method to determine sauce type
-                const sauceType = this.selectDropType();
-                console.log('Selected sauce type:', sauceType);
-                const typeProps = this.sauceTypes[sauceType];
-                
-                // Calculate maximum x position to prevent drops behind progress bar
-                const maxX = this.canvas.width - typeProps.width - 70;
-                
-                this.sauceDrops.push({
-                    x: Math.random() * maxX,
-                    y: 0,
-                    width: typeProps.width,
-                    height: typeProps.height,
-                    speed: typeProps.speedRange.min + 
-                           Math.random() * (typeProps.speedRange.max - typeProps.speedRange.min),
-                    type: sauceType,
-                    points: typeProps.points
-                });
-            } catch (error) {
-                console.error('Error in createSauceDrop:', error);
-                // Fallback behavior
-                const sauceType = 'mild';
-                const typeProps = this.sauceTypes[sauceType];
-                // ... continue with drop creation
-            }
+            const sauceType = this.selectDropType();
+            const typeProps = this.sauceTypes[sauceType];
+            const maxX = this.canvas.width - typeProps.width - 70;
+            
+            this.sauceDrops.push({
+                x: Math.random() * maxX,
+                y: 0,
+                width: typeProps.width,
+                height: typeProps.height,
+                speed: typeProps.speedRange.min + 
+                       Math.random() * (typeProps.speedRange.max - typeProps.speedRange.min),
+                type: sauceType,
+                points: typeProps.points
+            });
         }
     }
 
