@@ -170,9 +170,9 @@ class Game {
             }
         };
 
-        // Adjust base drop rate for more consistent drops
-        this.dropRate = 0.02;  // Increased from 0.008
-        this.minTimeBetweenDrops = 500;  // Maximum 500ms between drops
+        // Adjust base drop rate for more balanced drops
+        this.dropRate = 0.015;  // Keep at 1.5% chance per frame
+        this.minTimeBetweenDrops = 500;  // Changed back to 500ms
         this.lastDropTime = Date.now();
 
         // Initialize sauce types with base values
