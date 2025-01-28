@@ -384,6 +384,10 @@ class Game {
                 // Apply multiplier to points
                 const pointsEarned = drop.points * (this.multiplierActive ? this.multiplier : 1);
                 this.score += pointsEarned;
+                this.levelScore += pointsEarned;  // Add points to levelScore directly
+                
+                // Update level progress
+                this.updateLevel();
                 
                 this.scoreAnimations.push({
                     x: drop.x,
@@ -417,9 +421,6 @@ class Game {
                 this.levelUpMessage = null;
             }
         }
-
-        // Check for level up
-        this.updateLevel();
     }
 
     checkCollision(drop, taco) {
@@ -622,20 +623,13 @@ class Game {
     }
 
     updateLevel() {
-        // Calculate new level score
-        const newLevelScore = this.score - (this.scoreToNextLevel * (this.level - 1));
-        
-        if (newLevelScore >= this.scoreToNextLevel) {
+        if (this.levelScore >= this.scoreToNextLevel) {
             this.level++;
-            // Calculate the remainder score for the new level
-            this.levelScore = Math.max(0, newLevelScore - this.scoreToNextLevel);
+            this.levelScore = 0;  // Reset level score
             this.scoreToNextLevel = Math.floor(this.scoreToNextLevel * 2.5);
             
             this.increaseDifficulty();
             this.showLevelUpMessage();
-        } else {
-            // Update levelScore directly from current level's score
-            this.levelScore = newLevelScore;
         }
     }
 
