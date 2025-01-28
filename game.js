@@ -263,21 +263,26 @@ class Game {
         
         // Try to spawn heart power-up if not active
         if (!this.heartPowerup.active && Math.random() < this.heartPowerup.spawnRate) {
-            const maxX = this.canvas.width - this.heartPowerup.width - 70;
+            const maxX = Math.max(0, this.canvas.width - this.heartPowerup.width - 70);
             this.heartPowerup.active = true;
-            this.heartPowerup.x = Math.random() * maxX;
+            this.heartPowerup.x = Math.min(Math.max(0, Math.random() * maxX), maxX);
             this.heartPowerup.y = 0;
         }
 
         if (Math.random() < this.dropRate) {
             const sauceType = this.selectDropType();
             const typeProps = this.sauceTypes[sauceType];
-            // Adjust maxX to account for progress bar
-            const progressBarWidth = 50;  // Width plus margin
-            const maxX = this.canvas.width - typeProps.width - progressBarWidth;  // Changed from 70 to progressBarWidth
+            
+            // Calculate safe spawn area
+            const progressBarSpace = 60;  // Progress bar width + margin
+            const maxX = Math.max(0, this.canvas.width - typeProps.width - progressBarSpace);
+            const minX = 0;  // Left boundary
+            
+            // Ensure x position is within bounds
+            const safeX = Math.min(Math.max(minX, Math.random() * maxX), maxX);
             
             this.sauceDrops.push({
-                x: Math.random() * maxX,
+                x: safeX,
                 y: 0,
                 width: typeProps.width,
                 height: typeProps.height,
