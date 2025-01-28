@@ -166,15 +166,15 @@
             text-align: center;
             color: white;
             max-width: 800px;
-            padding: 20px;
+            padding: 10px;
             max-height: 100vh;
             display: flex;
             flex-direction: column;
         }
         .start-content h1 {
-            font-size: 48px;
+            font-size: 36px;
             color: #e74c3c;
-            margin: 20px 0;
+            margin: 10px 0;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 2px;
@@ -182,8 +182,8 @@
         .instructions {
             text-align: left;
             background: rgba(0, 0, 0, 0.7);
-            padding: 20px 30px;
-            margin: 10px 20px;
+            padding: 15px;
+            margin: 5px 10px;
             border-radius: 15px;
             overflow-y: auto;
             flex: 1;
@@ -191,7 +191,7 @@
         }
         .instructions h2 {
             color: #e74c3c;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -201,28 +201,28 @@
             padding: 0;
         }
         .instructions li {
-            margin: 15px 0;
-            font-size: 17px;
+            margin: 10px 0;
+            font-size: 15px;
             line-height: 1.4;
             font-weight: 600;
         }
         .instructions li ul {
-            margin-left: 30px;
+            margin-left: 20px;
             margin-top: 8px;
         }
         .instructions li ul li {
-            font-size: 15px;
-            margin: 8px 0;
+            font-size: 14px;
+            margin: 5px 0;
         }
         #start-button {
-            margin: 20px 0;
+            margin: 15px 0;
             min-height: 44px;
             min-width: 44px;
-            padding: 12px 30px;
+            padding: 10px 25px;
             background: #e74c3c;
             color: white;
             border: none;
-            font-size: 20px;
+            font-size: 18px;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
@@ -403,6 +403,30 @@
             -ms-overflow-style: none;  /* IE and Edge */
             scrollbar-width: none;  /* Firefox */
         }
+
+        /* Add media query for smaller screens */
+        @media (max-height: 600px) {
+            .start-content h1 {
+                font-size: 28px;
+                margin: 5px 0;
+            }
+            .instructions {
+                padding: 10px;
+            }
+            .instructions li {
+                margin: 8px 0;
+                font-size: 14px;
+            }
+            .instructions li ul li {
+                font-size: 13px;
+                margin: 4px 0;
+            }
+            #start-button {
+                margin: 10px 0;
+                padding: 8px 20px;
+                font-size: 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -413,6 +437,9 @@
     <div id="start-screen">
         <div class="start-content">
             <h1>Catch the Heat!</h1>
+            <div style="color: #ffd700; margin: 10px 0; font-weight: bold;">
+                ⚠️ BETA VERSION - EXPECT BUGS ⚠️
+            </div>
             <div class="instructions">
                 <h2>How to Play</h2>
                 <ul>

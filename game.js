@@ -158,8 +158,9 @@ class Game {
             }
         };
 
-        // Increase base drop rate from 0.006 to 0.02 (2% chance per frame)
-        this.dropRate = 0.02;
+        // Adjust base drop rate for 12-15 drops per 30 seconds
+        // At 60 FPS: 0.008 = ~0.48 drops per second = ~14.4 drops per 30 seconds
+        this.dropRate = 0.008;  // Changed from 0.02
 
         // Initialize sauce types with base values
         this.sauceTypes = JSON.parse(JSON.stringify(this.baseSauceTypes));
@@ -539,37 +540,31 @@ class Game {
             this.ctx.fillText(`Streak: ${this.catchStreak}/${this.requiredStreak}`, 10, 140);
         }
 
-        // Draw progress bar
-        const progressBarWidth = 200;
-        const progressBarHeight = 20;
-        const progressBarX = this.canvas.width - progressBarWidth - 20; // 20px margin from right
-        const progressBarY = 20; // 20px from top
+        // Draw vertical progress bar - 80% height with menu button clearance
+        const progressBarWidth = 30;  // Thinner for vertical orientation
+        const progressBarHeight = this.canvas.height * 0.8;  // 80% of screen height
+        const progressBarX = this.canvas.width - progressBarWidth - 20;  // 20px margin from right
+        const progressBarY = this.canvas.height * 0.1;  // Center the 80% bar by starting at 10% from top
 
-        // Draw background
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        // Draw background with more opacity
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         this.ctx.fillRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
 
-        // Draw progress
+        // Draw progress with brighter color (fill from bottom to top)
         const progress = this.levelScore / this.scoreToNextLevel;
-        this.ctx.fillStyle = '#e74c3c';
+        const progressHeight = progressBarHeight * progress;
+        this.ctx.fillStyle = '#ff4757';
         this.ctx.fillRect(
-            progressBarX, 
-            progressBarY, 
-            progressBarWidth * progress, 
-            progressBarHeight
+            progressBarX,
+            progressBarY + (progressBarHeight - progressHeight), // Start from bottom
+            progressBarWidth,
+            progressHeight
         );
 
-        // Draw border
+        // Draw thinner border
         this.ctx.strokeStyle = 'white';
-        this.ctx.lineWidth = 2;
+        this.ctx.lineWidth = 1;
         this.ctx.strokeRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
-
-        // Draw level text
-        this.ctx.fillStyle = 'white';
-        this.ctx.font = 'bold 20px Rubik, sans-serif';
-        this.ctx.textAlign = 'right';
-        this.ctx.fillText(`Level ${this.level}`, progressBarX - 10, progressBarY + 16);
-        this.ctx.textAlign = 'left'; // Reset text align for other text
     }
 
     fallbackTacoDraw() {
@@ -602,8 +597,9 @@ class Game {
     }
 
     increaseDifficulty() {
-        // Increase maximum drop rate from 0.03 to 0.06
-        this.dropRate = Math.min(0.02 + (this.level - 1) * 0.005, 0.06);
+        // Increase maximum drop rate more gradually
+        // Max rate of 0.015 = ~0.9 drops per second = ~27 drops per 30 seconds
+        this.dropRate = Math.min(0.008 + (this.level - 1) * 0.001, 0.015);  // Changed from 0.02 + ... 0.005, 0.06
 
         // Adjust sauce probabilities based on level
         if (this.level > 1) {
