@@ -543,7 +543,7 @@ class Game {
         // Draw vertical progress bar - 80% height with menu button clearance
         const progressBarWidth = 30;  // Thinner for vertical orientation
         const progressBarHeight = this.canvas.height * 0.8;  // 80% of screen height
-        const progressBarX = this.canvas.width - progressBarWidth - 20;  // 20px margin from right
+        const progressBarX = this.canvas.width - progressBarWidth - 60;  // Increased margin from right to avoid menu
         const progressBarY = this.canvas.height * 0.1;  // Center the 80% bar by starting at 10% from top
 
         // Draw background with more opacity
