@@ -398,6 +398,7 @@ class Game {
     }
 
     draw() {
+        console.log('Draw method called');
         // Clear the canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
@@ -432,6 +433,7 @@ class Game {
         });
 
         // Draw game elements (score, lives, progress bar, etc.)
+        console.log('About to draw game elements');
         this.drawGameElements();
 
         // Draw red overlay based on missed drops
@@ -479,6 +481,7 @@ class Game {
     }
 
     drawGameElements() {
+        console.log('Drawing game elements');
         // Draw score animations
         this.scoreAnimations.forEach(anim => {
             this.ctx.fillStyle = `rgba(255, 255, 255, ${anim.life})`;
@@ -584,8 +587,12 @@ class Game {
     }
 
     gameLoop() {
-        if (!this.gameStarted) return;
+        if (!this.gameStarted) {
+            console.log('Game not started yet');
+            return;
+        }
         
+        console.log('Game loop running');
         this.update();
         this.draw();
         requestAnimationFrame(() => this.gameLoop());
