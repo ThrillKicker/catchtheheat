@@ -170,9 +170,10 @@ class Game {
             }
         };
 
-        // Adjust base drop rate for 12-15 drops per 30 seconds
-        // At 60 FPS: 0.008 = ~0.48 drops per second = ~14.4 drops per 30 seconds
-        this.dropRate = 0.008;  // Changed from 0.02
+        // Adjust base drop rate for more consistent drops
+        this.dropRate = 0.02;  // Increased from 0.008
+        this.minTimeBetweenDrops = 500;  // Maximum 500ms between drops
+        this.lastDropTime = Date.now();
 
         // Initialize sauce types with base values
         this.sauceTypes = JSON.parse(JSON.stringify(this.baseSauceTypes));
@@ -260,23 +261,21 @@ class Game {
             console.error('selectDropType not properly initialized');
             return;
         }
-        
-        // Try to spawn heart power-up if not active
-        if (!this.heartPowerup.active && Math.random() < this.heartPowerup.spawnRate) {
-            const maxX = Math.max(0, this.canvas.width - this.heartPowerup.width - 70);
-            this.heartPowerup.active = true;
-            this.heartPowerup.x = Math.min(Math.max(0, Math.random() * maxX), maxX);
-            this.heartPowerup.y = 0;
-        }
 
-        if (Math.random() < this.dropRate) {
+        const currentTime = Date.now();
+        const timeSinceLastDrop = currentTime - this.lastDropTime;
+
+        // Force a drop if too much time has passed
+        const shouldForceDrop = timeSinceLastDrop > this.minTimeBetweenDrops;
+        
+        if (shouldForceDrop || Math.random() < this.dropRate) {
             const sauceType = this.selectDropType();
             const typeProps = this.sauceTypes[sauceType];
             
             // Calculate safe spawn area
-            const progressBarSpace = 60;  // Progress bar width + margin
+            const progressBarSpace = 60;
             const maxX = Math.max(0, this.canvas.width - typeProps.width - progressBarSpace);
-            const minX = 0;  // Left boundary
+            const minX = 0;
             
             // Ensure x position is within bounds
             const safeX = Math.min(Math.max(minX, Math.random() * maxX), maxX);
@@ -291,6 +290,8 @@ class Game {
                 type: sauceType,
                 points: typeProps.points
             });
+
+            this.lastDropTime = currentTime;
         }
     }
 
@@ -633,8 +634,8 @@ class Game {
             this.increaseDifficulty();
             this.showLevelUpMessage();
         } else {
-            // Ensure levelScore is never negative
-            this.levelScore = Math.max(0, newLevelScore);
+            // Update levelScore directly from current level's score
+            this.levelScore = newLevelScore;
         }
     }
 
