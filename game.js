@@ -256,6 +256,22 @@ class Game {
         this.taco.y = e.clientY - rect.top - this.taco.height / 2;
     }
 
+    selectDropType() {
+        const random = Math.random();
+        let cumulativeProbability = 0;
+        
+        // Check each sauce type in order
+        for (const type in this.sauceTypes) {
+            cumulativeProbability += this.sauceTypes[type].probability;
+            if (random <= cumulativeProbability) {
+                return type;
+            }
+        }
+        
+        // Fallback to mild if something goes wrong
+        return 'mild';
+    }
+
     createSauceDrop() {
         // Try to spawn heart power-up if not active
         if (!this.heartPowerup.active && Math.random() < this.heartPowerup.spawnRate) {
@@ -266,25 +282,15 @@ class Game {
         }
 
         if (Math.random() < this.dropRate) {
-            // Determine sauce type based on probability
-            const random = Math.random();
-            let sauceType;
-            
-            if (random < this.sauceTypes.mild.probability) {
-                sauceType = 'mild';
-            } else if (random < this.sauceTypes.mild.probability + this.sauceTypes.hot.probability) {
-                sauceType = 'hot';
-            } else {
-                sauceType = 'extraHot';
-            }
-
+            // Use the selectDropType method to determine sauce type
+            const sauceType = this.selectDropType();
             const typeProps = this.sauceTypes[sauceType];
             
             // Calculate maximum x position to prevent drops behind progress bar
-            const maxX = this.canvas.width - typeProps.width - 70; // 70px = progress bar width (30px) + right margin (20px) + safety margin (20px)
+            const maxX = this.canvas.width - typeProps.width - 70;
             
             this.sauceDrops.push({
-                x: Math.random() * maxX, // Use maxX instead of full canvas width
+                x: Math.random() * maxX,
                 y: 0,
                 width: typeProps.width,
                 height: typeProps.height,
