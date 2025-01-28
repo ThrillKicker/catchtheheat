@@ -537,9 +537,15 @@
             }
         });
 
-        // Initialize game when page loads
+        // Modify the window.onload handler
         window.onload = () => {
-            game = new Game();
+            try {
+                console.log('Initializing game...');
+                game = new Game();
+                console.log('Game initialized');
+            } catch (error) {
+                console.error('Error initializing game:', error);
+            }
         };
     </script>
     <script src="audio-manager.js"></script>

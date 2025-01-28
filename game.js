@@ -67,6 +67,18 @@ class Game {
             this.handleSpriteLoad();
         };
 
+        // Add error handlers for sprite loading
+        this.sprites.players.taco.onerror = (e) => {
+            console.error('Error loading taco sprite:', e);
+            this.spritesReady.players.taco = true; // Allow game to continue with fallback
+            this.handleSpriteLoad();
+        };
+        this.sprites.players.wing.onerror = (e) => {
+            console.error('Error loading wing sprite:', e);
+            this.spritesReady.players.wing = true;
+            this.handleSpriteLoad();
+        };
+
         // Set up sprite selection handler
         const spriteInputs = document.querySelectorAll('input[name="sprite"]');
         spriteInputs.forEach(input => {
@@ -190,21 +202,39 @@ class Game {
     }
 
     startGame() {
+        console.log('Starting game...');
+        
+        // Check if sprites are loaded
+        if (this.loadedSprites < this.totalSprites) {
+            console.log('Waiting for sprites to load...');
+            return;
+        }
+
         // Hide start screen
         const startScreen = document.getElementById('start-screen');
-        startScreen.style.display = 'none';
+        if (startScreen) {
+            startScreen.style.display = 'none';
+        } else {
+            console.error('Start screen element not found');
+        }
 
         // Start the game
-        this.gameStarted = true;
-        
-        // Add event listeners
-        window.addEventListener('resize', () => this.setCanvasSize());
-        this.canvas.addEventListener('touchmove', (e) => this.handleTouch(e));
-        this.canvas.addEventListener('mousemove', (e) => this.handleMouse(e));
-        
-        // Start music and game loop
-        this.audio.startMusic();
-        this.gameLoop();
+        try {
+            this.gameStarted = true;
+            
+            // Add event listeners
+            window.addEventListener('resize', () => this.setCanvasSize());
+            this.canvas.addEventListener('touchmove', (e) => this.handleTouch(e));
+            this.canvas.addEventListener('mousemove', (e) => this.handleMouse(e));
+            
+            // Start music and game loop
+            this.audio.startMusic();
+            requestAnimationFrame(() => this.gameLoop());
+            
+            console.log('Game started successfully');
+        } catch (error) {
+            console.error('Error starting game:', error);
+        }
     }
 
     setCanvasSize() {
@@ -593,11 +623,19 @@ class Game {
     }
 
     gameLoop() {
-        if (!this.gameStarted) return;
+        if (!this.gameStarted) {
+            console.log('Game loop stopped - game not started');
+            return;
+        }
         
-        this.update();
-        this.draw();
-        requestAnimationFrame(() => this.gameLoop());
+        try {
+            this.update();
+            this.draw();
+            requestAnimationFrame(() => this.gameLoop());
+        } catch (error) {
+            console.error('Error in game loop:', error);
+            this.gameStarted = false;
+        }
     }
 
     updateLevel() {
