@@ -206,15 +206,20 @@ class Game {
     }
 
     startGame() {
+        console.log('Starting game...');
+        console.log('Game started state before:', this.gameStarted);
+        
         const startScreen = document.getElementById('start-screen');
         startScreen.style.display = 'none';
 
         this.gameStarted = true;
+        console.log('Game started state after:', this.gameStarted);
         
         window.addEventListener('resize', () => this.setCanvasSize());
         this.canvas.addEventListener('touchmove', (e) => this.handleTouch(e));
         this.canvas.addEventListener('mousemove', (e) => this.handleMouse(e));
         
+        console.log('Starting game loop...');
         this.gameLoop();
     }
 
@@ -647,8 +652,9 @@ class Game {
 
     handleSpriteLoad() {
         this.loadedSprites++;
+        console.log(`Sprite loaded. Total loaded: ${this.loadedSprites}/${this.totalSprites}`);
         if (this.loadedSprites >= this.totalSprites) {
-            // All sprites loaded, hide loading screen
+            console.log('All sprites loaded, hiding loading screen');
             const loadingScreen = document.getElementById('loading');
             if (loadingScreen) {
                 loadingScreen.style.display = 'none';
