@@ -143,7 +143,7 @@ class Game {
         this.sauceTypes = JSON.parse(JSON.stringify(this.baseSauceTypes));
         
         // Drop frequency increases with level
-        this.dropRate = 0.0375;  // Was 0.025 (multiplied by 1.5)
+        this.dropRate = 0.056;  // Keep this high initial rate
         
         // Add score animation array
         this.scoreAnimations = [];
@@ -186,6 +186,11 @@ class Game {
         this.requiredStreak = 50;
         this.multiplierTimer = 0;  // Add timer for multiplier duration
         this.multiplierDuration = 30 * 60;  // 30 seconds at 60fps
+
+        // Add these properties to initializeGame method
+        this.lastDropTime = 0;
+        this.maxDropGap = 500;  // Maximum milliseconds between drops
+        this.minActiveDrops = 2;  // Minimum number of drops on screen
     }
 
     startGame() {
@@ -226,42 +231,34 @@ class Game {
     }
 
     createSauceDrop() {
-        // Try to spawn heart power-up if not active
-        if (!this.heartPowerup.active && Math.random() < this.heartPowerup.spawnRate) {
-            const maxX = this.canvas.width - this.heartPowerup.width - 70;
-            this.heartPowerup.active = true;
-            this.heartPowerup.x = Math.random() * maxX;
-            this.heartPowerup.y = 0;
-        }
+        const currentTime = Date.now();
+        const timeSinceLastDrop = currentTime - this.lastDropTime;
+        const needsMoreDrops = this.sauceDrops.length < this.minActiveDrops;
 
-        if (Math.random() < this.dropRate) {
-            // Determine sauce type based on probability
-            const random = Math.random();
-            let sauceType;
+        // Create a new drop if:
+        // 1. Random chance succeeds OR
+        // 2. Too much time has passed since last drop OR
+        // 3. Not enough active drops
+        if (Math.random() < this.dropRate || 
+            timeSinceLastDrop > this.maxDropGap || 
+            needsMoreDrops) {
             
-            if (random < this.sauceTypes.mild.probability) {
-                sauceType = 'mild';
-            } else if (random < this.sauceTypes.mild.probability + this.sauceTypes.hot.probability) {
-                sauceType = 'hot';
-            } else {
-                sauceType = 'extraHot';
-            }
-
-            const typeProps = this.sauceTypes[sauceType];
+            // Create the drop
+            const type = this.selectDropType();
+            const typeProps = this.sauceTypes[type];
             
-            // Calculate maximum x position to prevent drops behind progress bar
-            const maxX = this.canvas.width - typeProps.width - 70; // 70px = progress bar width (30px) + right margin (20px) + safety margin (20px)
-            
-            this.sauceDrops.push({
-                x: Math.random() * maxX, // Use maxX instead of full canvas width
-                y: 0,
+            const drop = {
+                x: Math.random() * (this.canvas.width - typeProps.width),
+                y: -typeProps.height,
                 width: typeProps.width,
                 height: typeProps.height,
-                speed: typeProps.speedRange.min + 
-                       Math.random() * (typeProps.speedRange.max - typeProps.speedRange.min),
-                type: sauceType,
+                speed: typeProps.speedRange.min + Math.random() * (typeProps.speedRange.max - typeProps.speedRange.min),
+                type: type,
                 points: typeProps.points
-            });
+            };
+            
+            this.sauceDrops.push(drop);
+            this.lastDropTime = currentTime;
         }
     }
 
@@ -584,9 +581,9 @@ class Game {
     }
 
     increaseDifficulty() {
-        // Faster increase in drop rate (cap at 0.12 instead of 0.08)
-        this.dropRate = Math.min(0.0375 + (this.level - 1) * 0.0045, 0.12);  // Multiplied base rate, scaling, and cap by 1.5
-
+        // Use higher scaling with high base rate
+        this.dropRate = Math.min(0.056 + (this.level - 1) * 0.0045, 0.12);  // Increased scaling to 0.0045
+        
         // Increase speeds and points for all sauce types
         for (let type in this.sauceTypes) {
             const sauce = this.sauceTypes[type];
