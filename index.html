@@ -520,9 +520,9 @@
             }
         });
 
-        // Initialize game when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM loaded, initializing game...');
+        // Wait for DOM to be fully loaded before initializing game
+        window.addEventListener('load', () => {
+            console.log('Window loaded, initializing game...');
             game = new Game();
             console.log('Game initialized');
         });
