@@ -143,7 +143,7 @@ class Game {
         this.sauceTypes = JSON.parse(JSON.stringify(this.baseSauceTypes));
         
         // Drop frequency increases with level
-        this.dropRate = 0.015;  // Was 0.006 (increased from 0.6% to 1.5% chance per frame)
+        this.dropRate = 0.025;  // Was 0.015 (increased from 1.5% to 2.5% chance per frame)
         
         // Add score animation array
         this.scoreAnimations = [];
@@ -584,8 +584,8 @@ class Game {
     }
 
     increaseDifficulty() {
-        // Faster increase in drop rate (cap at 0.05 instead of 0.03)
-        this.dropRate = Math.min(0.015 + (this.level - 1) * 0.002, 0.05);  // Increased base rate and scaling
+        // Faster increase in drop rate (cap at 0.08 instead of 0.05)
+        this.dropRate = Math.min(0.025 + (this.level - 1) * 0.003, 0.08);  // Increased base rate, scaling, and cap
 
         // Increase speeds and points for all sauce types
         for (let type in this.sauceTypes) {
