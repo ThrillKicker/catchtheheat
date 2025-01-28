@@ -545,6 +545,38 @@ class Game {
             this.ctx.font = '20px Rubik, sans-serif';
             this.ctx.fillText(`Streak: ${this.catchStreak}/${this.requiredStreak}`, 10, 140);
         }
+
+        // Draw progress bar
+        const progressBarWidth = 200;
+        const progressBarHeight = 20;
+        const progressBarX = this.canvas.width - progressBarWidth - 20; // 20px margin from right
+        const progressBarY = 20; // 20px from top
+
+        // Draw background
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        this.ctx.fillRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
+
+        // Draw progress
+        const progress = this.levelScore / this.scoreToNextLevel;
+        this.ctx.fillStyle = '#e74c3c';
+        this.ctx.fillRect(
+            progressBarX, 
+            progressBarY, 
+            progressBarWidth * progress, 
+            progressBarHeight
+        );
+
+        // Draw border
+        this.ctx.strokeStyle = 'white';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
+
+        // Draw level text
+        this.ctx.fillStyle = 'white';
+        this.ctx.font = 'bold 20px Rubik, sans-serif';
+        this.ctx.textAlign = 'right';
+        this.ctx.fillText(`Level ${this.level}`, progressBarX - 10, progressBarY + 16);
+        this.ctx.textAlign = 'left'; // Reset text align for other text
     }
 
     fallbackTacoDraw() {
