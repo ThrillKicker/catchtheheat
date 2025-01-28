@@ -317,21 +317,28 @@
             color: white;
         }
 
+        .game-over-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
         #game-over-screen h1 {
             font-size: 48px;
             color: #e74c3c;
-            margin-bottom: 20px;
+            margin: 0;
         }
 
         #game-over-screen p {
             font-size: 24px;
-            margin-bottom: 30px;
+            margin: 0;
         }
 
         .game-over-buttons {
             display: flex;
+            flex-direction: column;
             gap: 20px;
-            justify-content: center;
         }
 
         #restart-button {
@@ -456,11 +463,13 @@
         </div>
     </div>
     <div id="game-over-screen" style="display: none;">
-        <h1>Game Over!</h1>
-        <p>Final Score: <span id="final-score">0</span></p>
-        <div class="game-over-buttons">
-            <button id="restart-button">Play Again?</button>
-            <button id="share-button">Share Score</button>
+        <div class="game-over-content">
+            <h1>Game Over!</h1>
+            <p>Final Score: <span id="final-score">0</span></p>
+            <div class="game-over-buttons">
+                <button id="restart-button">Play Again?</button>
+                <button id="share-button">Share Score</button>
+            </div>
         </div>
     </div>
     <button id="menu-button">
