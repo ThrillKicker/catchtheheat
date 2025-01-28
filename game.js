@@ -576,17 +576,16 @@ class Game {
 
         // Draw vertical progress bar - make it more prominent and closer to edge
         const progressBarWidth = 30;
-        const progressBarHeight = this.canvas.height * 0.8;
+        const progressBarHeight = this.canvas.height * 0.8;  // Keep at 80% of screen height
         const progressBarX = this.canvas.width - progressBarWidth - 20;
-        const progressBarY = this.canvas.height * 0.1;
+        const progressBarY = this.canvas.height * 0.15;  // Start at 15% from top (moved down)
 
         // Draw background with more transparency
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         this.ctx.fillRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
 
-        // Calculate progress based on current level's score only
-        const currentLevelScore = this.score - (this.scoreToNextLevel * (this.level - 1));
-        const progress = Math.min(currentLevelScore / this.scoreToNextLevel, 1);
+        // Use levelScore instead of calculating from total score
+        const progress = this.levelScore / this.scoreToNextLevel;
         const progressHeight = progressBarHeight * progress;
         
         // Draw progress with semi-transparent red
