@@ -95,13 +95,27 @@ class Game {
         });
         this.currentSprite = 'taco'; // default sprite
 
-        // Set up start button
-        const startButton = document.getElementById('start-button');
-        startButton.addEventListener('click', () => this.startGame());
+        // Wait for DOM to be ready before setting up buttons
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Setting up buttons...');
+            // Set up start button
+            const startButton = document.getElementById('start-button');
+            if (startButton) {
+                console.log('Start button found');
+                startButton.addEventListener('click', () => {
+                    console.log('Start button clicked');
+                    this.startGame();
+                });
+            } else {
+                console.error('Start button not found');
+            }
 
-        // Set up restart button
-        const restartButton = document.getElementById('restart-button');
-        restartButton.addEventListener('click', () => this.restart());
+            // Set up restart button
+            const restartButton = document.getElementById('restart-button');
+            if (restartButton) {
+                restartButton.addEventListener('click', () => this.restart());
+            }
+        });
 
         // Initialize game objects but don't start the game loop yet
         this.initializeGame();

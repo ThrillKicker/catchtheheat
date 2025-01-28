@@ -521,9 +521,11 @@
         });
 
         // Initialize game when page loads
-        window.onload = () => {
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, initializing game...');
             game = new Game();
-        };
+            console.log('Game initialized');
+        });
     </script>
     <script src="game.js"></script>
 </body>
