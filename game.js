@@ -271,7 +271,9 @@ class Game {
         if (Math.random() < this.dropRate) {
             const sauceType = this.selectDropType();
             const typeProps = this.sauceTypes[sauceType];
-            const maxX = this.canvas.width - typeProps.width - 70;
+            // Adjust maxX to account for progress bar
+            const progressBarWidth = 50;  // Width plus margin
+            const maxX = this.canvas.width - typeProps.width - progressBarWidth;  // Changed from 70 to progressBarWidth
             
             this.sauceDrops.push({
                 x: Math.random() * maxX,
@@ -560,10 +562,10 @@ class Game {
             this.ctx.fillText(`Streak: ${this.catchStreak}/${this.requiredStreak}`, 10, 140);
         }
 
-        // Draw vertical progress bar - make it more prominent
+        // Draw vertical progress bar - make it more prominent and closer to edge
         const progressBarWidth = 30;
         const progressBarHeight = this.canvas.height * 0.8;
-        const progressBarX = this.canvas.width - progressBarWidth - 60;
+        const progressBarX = this.canvas.width - progressBarWidth - 20;  // Changed from 60 to 20
         const progressBarY = this.canvas.height * 0.1;
 
         // Draw background with higher contrast
