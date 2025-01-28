@@ -164,12 +164,15 @@
             text-align: center;
             color: white;
             max-width: 800px;
-            padding: 30px;
+            padding: 20px;
+            max-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         .start-content h1 {
             font-size: 48px;
             color: #e74c3c;
-            margin-bottom: 30px;
+            margin: 20px 0;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 2px;
@@ -177,9 +180,12 @@
         .instructions {
             text-align: left;
             background: rgba(0, 0, 0, 0.7);
-            padding: 30px 40px;
-            margin: 20px;
+            padding: 20px 30px;
+            margin: 10px 20px;
             border-radius: 15px;
+            overflow-y: auto;
+            flex: 1;
+            -webkit-overflow-scrolling: touch;
         }
         .instructions h2 {
             color: #e74c3c;
@@ -207,10 +213,10 @@
             margin: 8px 0;
         }
         #start-button {
+            margin: 20px 0;
             min-height: 44px;
             min-width: 44px;
             padding: 12px 30px;
-            margin: 10px;
             background: #e74c3c;
             color: white;
             border: none;
@@ -383,6 +389,17 @@
             font-family: 'Rubik', sans-serif;
             -webkit-font-smoothing: antialiased;
             text-rendering: optimizeLegibility;
+        }
+
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .instructions::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .instructions {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
         }
     </style>
 </head>
