@@ -171,8 +171,8 @@ class Game {
         };
 
         // Adjust base drop rate for slower drops
-        this.dropRate = 0.012;  // Decreased from 0.015
-        this.minTimeBetweenDrops = 600;  // Increased from 500ms to 600ms
+        this.dropRate = 0.01;  // Decreased from 0.012
+        this.minTimeBetweenDrops = 700;  // Increased from 600ms to 700ms
         this.lastDropTime = Date.now();
 
         // Initialize sauce types with base values
@@ -214,8 +214,8 @@ class Game {
         this.multiplier = 1;
         this.multiplierActive = false;
         this.requiredStreak = 50;
-        this.multiplierEndTime = 0;  // Changed from timer to end time
-        this.multiplierDuration = 30000;  // 30 seconds in milliseconds (changed from frames)
+        this.multiplierEndTime = 0;
+        this.multiplierDuration = 10000;  // Changed from 30000 to 10000 (10 seconds)
         this.highestMultiplier = 1;
     }
 
