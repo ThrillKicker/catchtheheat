@@ -569,13 +569,6 @@ class Game {
             this.ctx.fillText(`${this.multiplier}X MULTIPLIER! (${secondsLeft}s)`, 10, 140);
         }
 
-        // Show catch streak when getting close
-        if (!this.multiplierActive && this.catchStreak > 30) {
-            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-            this.ctx.font = '20px Rubik, sans-serif';
-            this.ctx.fillText(`Streak: ${this.catchStreak}/${this.requiredStreak}`, 10, 140);
-        }
-
         // Draw vertical progress bar - make it more prominent and closer to edge
         const progressBarWidth = 30;
         const progressBarHeight = this.canvas.height * 0.8;
