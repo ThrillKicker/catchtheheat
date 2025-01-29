@@ -365,8 +365,9 @@ class Game {
                 // Check if we've reached a new multiplier level
                 if (this.catchStreak >= this.requiredStreak && this.catchStreak % 50 === 0) {
                     const newMultiplier = Math.min(3, 1 + Math.floor(this.catchStreak / 50));  // Cap at 3x
-                    if (newMultiplier > this.highestMultiplier) {
-                        this.highestMultiplier = newMultiplier;
+                    
+                    // Changed condition to allow reactivating 3x multiplier
+                    if (newMultiplier >= this.highestMultiplier) {
                         this.multiplierActive = true;
                         this.multiplier = newMultiplier;
                         this.multiplierEndTime = Date.now() + this.multiplierDuration;
