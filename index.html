@@ -170,6 +170,7 @@
             max-height: 100vh;
             display: flex;
             flex-direction: column;
+            align-items: center;
         }
         .start-content h1 {
             font-size: 36px;
@@ -216,9 +217,9 @@
         }
         /* Common button styles for all game buttons */
         .game-button {
-            min-width: 200px;
+            width: 250px;  /* Fixed width for all buttons */
             padding: 12px 30px;
-            margin: 10px 0;
+            margin: 10px auto;  /* Changed to auto margins for centering */
             font-size: 20px;
             border-radius: 5px;
             cursor: pointer;
@@ -229,6 +230,8 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             transition: background-color 0.3s;
+            display: block;  /* Ensure block display */
+            text-align: center;
         }
         #start-button {
             background: #e74c3c;
@@ -341,6 +344,8 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            align-items: center;
+            width: 100%;  /* Full width to allow centering */
         }
 
         #restart-button {
@@ -405,6 +410,11 @@
                 padding: 8px 20px;
                 font-size: 16px;
                 min-width: 200px;
+            }
+            .game-button {
+                width: 200px;
+                padding: 8px 20px;
+                font-size: 16px;
             }
         }
     </style>
